@@ -12,7 +12,12 @@ galaxy_info:
 
   galaxy_tags:
     - prowlarr
+    - docker
     - servarr
+    - prometheus
+    - metrics
+    - cloudflare
+    - traefik
     - pvr
     - indexers
     - media
