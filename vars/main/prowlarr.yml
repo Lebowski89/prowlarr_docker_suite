@@ -29,7 +29,7 @@ prowlarr_network_postgres_bind:
 prowlarr_network_traefik_bind:
   - name: '{{ prowlarr_traefik_network }}'
 prowlarr_network_prometheus_bind:
-  - name: '{{prowlarr_prometheus_network }}'
+  - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_docker_networks: '{{ prowlarr_network_default_bind
                             + (prowlarr_network_postgres_bind

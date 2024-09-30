@@ -61,7 +61,7 @@ prowlarr_flaresolverr_docker_envs: '{{ prowlarr_flaresolverr_env_default
 prowlarr_flaresolverr_network_default_bind:
   - name: '{{ prowlarr_network_backend }}'
 prowlarr_flaresolverr_network_prometheus_bind:
-  - name: '{{prowlarr_prometheus_network }}'
+  - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_flaresolverr_docker_networks: '{{ prowlarr_flaresolverr_network_default_bind
                                            + (prowlarr_flaresolverr_network_prometheus_bind

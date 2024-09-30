@@ -27,4 +27,3 @@ prowlarr_flaresolverr_env_pgid: []
 prowlarr_flaresolverr_ports_host: '8191'
 prowlarr_flaresolverr_ports_cont: '8191'
 prowlarr_flaresolverr_ports_metrics: '8192'
-

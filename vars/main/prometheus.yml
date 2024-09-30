@@ -79,7 +79,7 @@ prowlarr_prometheus_network_default_bind:
 prowlarr_prometheus_network_traefik_bind:
   - name: '{{ prowlarr_prometheus_traefik_network }}'
 prowlarr_prometheus_network_bind:
-  - name: '{{prowlarr_prometheus_network }}'
+  - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_prometheus_docker_networks: '{{ prowlarr_prometheus_network_default_bind
                                          + (prowlarr_prometheus_network_traefik_bind
@@ -182,7 +182,7 @@ prowlarr_prometheus_exporter_is_enabled: '{{ (prowlarr_prometheus_exporter_name 
 prowlarr_prometheus_exporter_network_default_bind:
   - name: '{{ prowlarr_network_backend }}'
 prowlarr_prometheus_exporter_network_bind:
-  - name: '{{prowlarr_prometheus_network }}'
+  - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_prometheus_exporter_networks: '{{ prowlarr_prometheus_exporter_network_default_bind
                                            + (prowlarr_prometheus_exporter_network_bind

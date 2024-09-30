@@ -65,7 +65,7 @@ prowlarr_postgres_auth_password_file: 'postgres_key.txt'
 ################################
 
 prowlarr_postgres_database_main: 'prowlarr-main'
-prowlarr_postgres_database_log: 'prowlarr-log' 
+prowlarr_postgres_database_log: 'prowlarr-log'
 
 ################################
 # CLEAN
