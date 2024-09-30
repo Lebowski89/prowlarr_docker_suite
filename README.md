@@ -8,3 +8,5 @@ Prowlarr Suite
       - Includes the option of creating a Cloudflare DNS record for your Prowlarr instance for reverse proxy purposes.
       - Includes the option of joining Prowlarr to an existing Traefik docker network (or creating one if none exists).
       - Includes the option of editing Prowlarr's config.xml to include an existing Prowlarr API - maintaining connections to other applications that rely on it.
+
+(Proper documentation is coming...)
