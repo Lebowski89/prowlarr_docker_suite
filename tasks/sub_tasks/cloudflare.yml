@@ -1,0 +1,56 @@
+---
+
+################################
+# prowlarr
+################################
+
+- name: Remove existing CNAME DNS record
+  community.general.cloudflare_dns:
+    api_token: '{{ prowlarr_cloudflare_api_token }}'
+    zone: '{{ prowlarr_cloudflare_zone }}'
+    state: absent
+    type: CNAME
+    record: '{{ prowlarr_cloudflare_record }}'
+
+- name: Remove existing A DNS record
+  community.general.cloudflare_dns:
+    api_token: '{{ prowlarr_cloudflare_api_token }}'
+    zone: '{{ prowlarr_cloudflare_zone }}'
+    state: absent
+    type: A
+    record: '{{ prowlarr_cloudflare_record }}'
+
+- name: Get public ip for DNS tasks
+  block:
+    - name: Get public IP
+      community.general.ipify_facts:
+        timeout: 20
+      delegate_to: localhost
+      register: public_ip
+
+    - name: Public IP output
+      ansible.builtin.debug:
+        msg: '{{ ipify_public_ip }}'
+
+- name: Add prowlarr DNS record
+  community.general.cloudflare_dns:
+    api_token: '{{ prowlarr_cloudflare_api_token }}'
+    zone: '{{ prowlarr_cloudflare_zone }}'
+    state: present
+    solo: true
+    proxied: '{{ prowlarr_cloudflare_proxy }}'
+    type: '{{ prowlarr_cloudflare_record_type }}'
+    value: '{{ ipify_public_ip }}'
+    record: '{{ prowlarr_cloudflare_record }}'
+  register: prowlarr_cloudflare_record_creation_status
+
+- name: Tasks on success
+  when: prowlarr_cloudflare_record_creation_status is succeeded
+  block:
+    - name: Set 'dns_record_print' variable
+      ansible.builtin.set_fact:
+        prowlarr_cloudflare_record_print: '{{ (prowlarr_cloudflare_record == prowlarr_cloudflare_zone) | ternary(prowlarr_cloudflare_zone, prowlarr_cloudflare_record + "." + prowlarr_cloudflare_zone) }}'
+
+    - name: Display DNS record creation status
+      ansible.builtin.debug:
+        msg: 'DNS A Record for "{{ prowlarr_cloudflare_record_print }}" set to "{{ ipify_public_ip }}" was added. Proxy: {{ prowlarr_cloudflare_proxy }}'

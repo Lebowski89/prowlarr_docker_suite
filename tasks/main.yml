@@ -1,0 +1,283 @@
+---
+
+################################
+# DEPENDENCIES
+################################
+
+- name: Install prerequisite apt packages
+  ansible.builtin.apt:
+    pkg:
+      - python3-requests
+      - python3-psycopg2
+      - python3-lxml
+    update_cache: true
+
+- name: Install collection requirements
+  community.general.ansible_galaxy_install:
+    type: collection
+    requirements_file: '{{ role_path }}/requirements.yml'
+
+################################
+# DOCKER
+################################
+
+- name: Apt install docker if required
+  when: ansible_os_family == 'Debian'
+  block:
+    - name: Gather apt facts
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Include docker install tasks
+      when: '"docker-ce" not in ansible_facts.packages'
+      ansible.builtin.include_tasks: 'sub_tasks/docker.yml'
+
+################################
+# CLEAN UP
+################################
+
+- name: Register prowlarr container
+  community.docker.docker_container_info:
+    name: '{{ prowlarr_basics_name }}'
+  register: prowlarr_existing_container_result
+
+- name: Remove existing prowlarr container
+  when: prowlarr_existing_container_result.exists
+  community.docker.docker_container:
+    container_default_behavior: compatibility
+    name: '{{ prowlarr_basics_name }}'
+    state: absent
+    stop_timeout: 10
+  register: remove_prowlarr_docker
+  retries: 5
+  delay: 10
+  until: remove_prowlarr_docker is succeeded
+
+################################
+# BACKEND NETWORK
+################################
+
+- name: Conduct backend network tasks
+  when: prowlarr_network_backend_is_enabled
+  block:
+    - name: Register prowlarr backend network
+      community.docker.docker_network_info:
+        name: '{{ prowlarr_network_backend }}'
+      register: prowlarr_net_backend_result
+
+    - name: Prowlarr network backend builtin fail
+      ansible.builtin.fail:
+        msg: prowlarr backend network does not exist nor is it enabled. Ensure the prowlarr backend network variables contain valid entries.
+      when:
+        - not prowlarr_net_backend_result.exists
+        - not prowlarr_network_backend_is_enabled
+
+    - name: Create prowlarr backend network
+      when:
+        - not prowlarr_net_backend_result.exists
+        - prowlarr_network_backend_is_enabled
+      community.docker.docker_network:
+        name: '{{ prowlarr_network_backend }}'
+        driver: '{{ prowlarr_network_backend_driver }}'
+        ipam_config:
+          - subnet: '{{ prowlarr_network_backend_subnet }}'
+
+################################
+# APPDATA
+################################
+
+- name: Create prowlarr appdata directory
+  ansible.builtin.file:
+    path: '{{ prowlarr_paths_location }}'
+    state: directory
+    owner: '{{ prowlarr_env_puid }}'
+    group: '{{ prowlarr_env_pgid }}'
+    mode: '0755'
+
+################################
+# CONFIG
+################################
+
+- name: Check if prowlarr config.xml exists
+  ansible.builtin.stat:
+    path: '{{ prowlarr_paths_location }}/config.xml'
+  register: prowlarr_config_xml
+
+- name: Create prowlarr config.xml file
+  when: not prowlarr_config_xml.stat.exists
+  block:
+    - name: Import config file
+      ansible.builtin.template:
+        src: '{{ role_path }}/templates/config.xml.j2'
+        dest: '{{ prowlarr_paths_location }}/config.xml'
+        force: true
+        owner: '{{ prowlarr_env_puid }}'
+        group: '{{ prowlarr_env_pgid }}'
+        mode: '0664'
+
+    - name: Wait for 'config.xml' to be created
+      ansible.builtin.wait_for:
+        path: '{{ prowlarr_paths_location }}/config.xml'
+        state: present
+
+    - name: Prowlarr config.xml | Lookup Apikey value
+      when: prowlarr_api_key_is_enabled
+      community.general.xml:
+        path: '{{ prowlarr_paths_location }}/config.xml'
+        xpath: "/Config/ApiKey"
+        content: "text"
+      register: xml_prowlarr_api
+
+    - name: Prowlarr config.xml | insert existing api key
+      when:
+        - prowlarr_api_key_is_enabled
+        - ((xml_prowlarr_api.matches[0].ApiKey is defined) and (xml_prowlarr_api.matches[0].ApiKey != prowlarr_api_key))
+      community.general.xml:
+        path: '{{ prowlarr_paths_location }}/config.xml'
+        xpath: '/Config/ApiKey'
+        value: '{{ prowlarr_api_key }}'
+
+    - name: Prowlarr config.xml | Lookup AuthenticationMethod value
+      when: prowlarr_authelia_is_enabled
+      community.general.xml:
+        path: '{{ prowlarr_paths_location }}/config.xml'
+        xpath: "/Config/AuthenticationMethod"
+        content: "text"
+      register: xml_prowlarr_external
+
+    - name: Register authelia container
+      when: prowlarr_authelia_is_enabled
+      community.docker.docker_container_info:
+        name: '{{ prowlarr_authelia_name }}'
+      register: prowlarr_authelia_container_result
+
+    - name: Prowlarr config.xml | change auth method to external  ## prevents double login when using authelia
+      when:
+        - prowlarr_authelia_is_enabled
+        - prowlarr_authelia_container_result.exists
+        - ((xml_prowlarr_external.matches[0].AuthenticationMethod is defined) and (xml_prowlarr_external.matches[0].AuthenticationMethod != 'External'))
+      community.general.xml:
+        path: '{{ prowlarr_paths_location }}/config.xml'
+        xpath: '/Config/AuthenticationMethod'
+        value: 'External'
+
+################################
+# POSTGRES
+################################
+
+- name: Include postgres container tasks
+  when: prowlarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_container.yml'
+
+- name: Include postgres database tasks
+  when: prowlarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_database.yml'
+
+- name: Include postgres prowlarr config.xml tasks
+  when: prowlarr_postgres_is_enabled
+  ansible.builtin.include_tasks: 'postgres/postgres_config_xml.yml'
+
+################################
+# TRAEFIK
+################################
+
+- name: Conduct traefik tasks
+  when: prowlarr_traefik_is_enabled
+  block:
+    - name: Register traefik network
+      community.docker.docker_network_info:
+        name: '{{ prowlarr_traefik_network }}'
+      register: prowlarr_traefik_network_result
+
+    - name: Traefik builtin fail
+      when:
+        - not prowlarr_traefik_network_is_enabled
+        - not prowlarr_traefik_network_result.exists
+      ansible.builtin.fail:
+        msg: Traefik network does not exist nor is it enabled. Ensure the Traefik network variables contain valid entries.
+
+    - name: Create traefik network
+      when: not prowlarr_traefik_network_result.exists
+      community.docker.docker_network:
+        name: '{{ prowlarr_traefik_network }}'
+        driver: '{{ prowlarr_traefik_network_driver }}'
+        ipam_config:
+          - subnet: '{{ prowlarr_traefik_network_subnet }}'
+
+################################
+# CLOUDFLARE
+################################
+
+- name: Include cloudflare tasks
+  when: prowlarr_cloudflare_is_enabled
+  ansible.builtin.include_tasks: 'sub_tasks/cloudflare.yml'
+
+################################
+# METRICS
+################################
+
+- name: Include prometheus container tasks
+  when: prowlarr_prometheus_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_container.yml'
+
+- name: Include prometheus exporter tasks
+  when:
+    - prowlarr_prometheus_is_enabled
+    - prowlarr_prometheus_exporter_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_exporter.yml'
+
+- name: Include prometheus cloudflare tasks
+  when: prowlarr_prometheus_is_enabled
+  ansible.builtin.include_tasks: 'prometheus/prometheus_cloudflare.yml'
+
+################################
+# FLARESOLVERR
+################################
+
+- name: Create flaresolverr container
+  when: prowlarr_flaresolverr_is_enabled
+  community.docker.docker_container:
+    name: '{{ prowlarr_flaresolverr_basics_name }}'
+    image: '{{ prowlarr_flaresolverr_basics_image_repo }}:{{ prowlarr_flaresolverr_basics_image_tag }}'
+    networks: '{{ prowlarr_flaresolverr_docker_networks }}'
+    env: '{{ prowlarr_flaresolverr_docker_envs }}'
+    ports:
+      - '{{ prowlarr_flaresolverr_ports_host }}:{{ prowlarr_flaresolverr_ports_cont }}'
+    expose:
+      - '{{ prowlarr_flaresolverr_ports_metrics }}'
+    restart_policy: '{{ prowlarr_flaresolverr_basics_restart_policy }}'
+
+################################
+# CONTAINER
+################################
+
+- name: Create prowlarr container
+  when: not prowlarr_traefik_is_enabled
+  community.docker.docker_container:
+    name: '{{ prowlarr_basics_name }}'
+    image: '{{ prowlarr_basics_image_repo }}:{{ prowlarr_basics_image_tag }}'
+    networks: '{{ prowlarr_docker_networks }}'
+    env:
+      PUID: '{{ prowlarr_env_puid }}'
+      PGID: '{{ prowlarr_env_pgid }}'
+      TZ: '{{ prowlarr_env_timezone }}'
+    ports:
+      - '{{ prowlarr_ports_host }}:{{ prowlarr_ports_cont }}'
+    volumes: '{{ prowlarr_docker_volumes }}'
+    restart_policy: '{{ prowlarr_basics_restart_policy }}'
+
+- name: Create prowlarr traefik container
+  when: prowlarr_traefik_is_enabled
+  community.docker.docker_container:
+    name: '{{ prowlarr_basics_name }}'
+    image: '{{ prowlarr_basics_image_repo }}:{{ prowlarr_basics_image_tag }}'
+    networks: '{{ prowlarr_docker_networks }}'
+    env:
+      PUID: '{{ prowlarr_env_puid }}'
+      PGID: '{{ prowlarr_env_pgid }}'
+      TZ: '{{ prowlarr_env_timezone }}'
+    labels: '{{ prowlarr_traefik_labels }}'
+    ports:
+      - '{{ prowlarr_ports_host }}:{{ prowlarr_ports_cont }}'
+    volumes: '{{ prowlarr_docker_volumes }}'
+    restart_policy: '{{ prowlarr_basics_restart_policy }}'

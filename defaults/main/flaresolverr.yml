@@ -1,0 +1,30 @@
+---
+
+  ## helps with Prowlarr connect to trackers protected by cloudflare
+  ## see: https://github.com/FlareSolverr/FlareSolverr
+
+################################
+# BASICS
+################################
+
+prowlarr_flaresolverr_basics_name: 'flaresolverr'
+prowlarr_flaresolverr_basics_image_repo: 'ghcr.io/flaresolverr/flaresolverr'
+prowlarr_flaresolverr_basics_image_tag: 'latest'
+prowlarr_flaresolverr_basics_restart_policy: 'unless-stopped'
+
+################################
+# ENV
+################################
+
+prowlarr_flaresolverr_env_timezone: 'Australia/Melbourne'
+prowlarr_flaresolverr_env_puid: 'ansible'
+prowlarr_flaresolverr_env_pgid: 'ansible'
+
+################################
+# PORTS
+################################
+
+prowlarr_flaresolverr_ports_host: '8191'
+prowlarr_flaresolverr_ports_cont: '8191'
+prowlarr_flaresolverr_ports_metrics: '8192'
+

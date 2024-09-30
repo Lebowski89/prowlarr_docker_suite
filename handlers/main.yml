@@ -1,0 +1,14 @@
+---
+
+- name: Restart prometheus container
+  community.docker.docker_container:
+    container_default_behavior: compatibility
+    name: '{{ prowlarr_prometheus_basics_name }}'
+    state: started
+    restart: true
+    stop_timeout: 10
+  register: restart_prowlarr_prometheus_docker
+  retries: 5
+  delay: 10
+  until: restart_prowlarr_prometheus_docker is succeeded
+  listen: restart prometheus

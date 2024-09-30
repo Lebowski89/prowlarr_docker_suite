@@ -1,0 +1,148 @@
+---
+
+################################
+# API
+################################
+
+prowlarr_api_key_is_enabled: '{{ (prowlarr_api_key is defined) and
+                                 (prowlarr_api_key is not none) and
+                                 (prowlarr_api_key | trim | length > 0) }}'
+
+################################
+# NETWORK
+################################
+
+prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend is defined) and
+                                         (prowlarr_network_backend is not none) and
+                                         (prowlarr_network_backend | trim | length > 0) and
+                                         (prowlarr_network_backend_driver is defined) and
+                                         (prowlarr_network_backend_driver is not none) and
+                                         (prowlarr_network_backend_driver | trim | length > 0) and
+                                         (prowlarr_network_backend_subnet is defined) and
+                                         (prowlarr_network_backend_subnet is not none) and
+                                         (prowlarr_network_backend_subnet | trim | length > 0) }}'
+
+prowlarr_network_default_bind:
+  - name: '{{ prowlarr_network_backend }}'
+prowlarr_network_postgres_bind:
+  - name: '{{ prowlarr_postgres_network }}'
+prowlarr_network_traefik_bind:
+  - name: '{{ prowlarr_traefik_network }}'
+prowlarr_network_prometheus_bind:
+  - name: '{{prowlarr_prometheus_network }}'
+
+prowlarr_docker_networks: '{{ prowlarr_network_default_bind
+                            + (prowlarr_network_postgres_bind
+                               if prowlarr_postgres_is_enabled
+                               else [])
+                            + (prowlarr_network_traefik_bind
+                               if prowlarr_traefik_is_enabled
+                               else [])
+                            + (prowlarr_network_prometheus_bind
+                               if prowlarr_prometheus_is_enabled
+                               else []) }}'
+
+
+################################
+# BINDS
+################################
+
+prowlarr_docker_volumes: '{{ prowlarr_volumes_binds_default }}'
+
+################################
+# AUTHELIA
+################################
+
+prowlarr_authelia_is_enabled: '{{ (prowlarr_authelia_name is defined) and
+                                  (prowlarr_authelia_name is not none) and
+                                  (prowlarr_authelia_name | trim | length > 0) }}'
+
+################################
+# TRAEFIK
+################################
+
+prowlarr_traefik_is_enabled: '{{ (prowlarr_traefik_network is defined) and
+                                 (prowlarr_traefik_network is not none) and
+                                 (prowlarr_traefik_network | trim | length > 0) and
+                                 (prowlarr_traefik_subdomain is defined) and
+                                 (prowlarr_traefik_subdomain is not none) and
+                                 (prowlarr_traefik_subdomain | trim | length > 0) and
+                                 (prowlarr_traefik_domain is defined) and
+                                 (prowlarr_traefik_domain is not none) and
+                                 (prowlarr_traefik_domain | trim | length > 0) and
+                                 (prowlarr_traefik_port is defined) and
+                                 (prowlarr_traefik_port is not none) and
+                                 (prowlarr_traefik_port | trim | length > 0) and
+                                 (prowlarr_traefik_themepark_theme is defined) and
+                                 (prowlarr_traefik_themepark_theme is not none) and
+                                 (prowlarr_traefik_themepark_theme | trim | length > 0) }}'
+
+prowlarr_traefik_network_is_enabled: '{{ (prowlarr_traefik_network is defined) and
+                                         (prowlarr_traefik_network is not none) and
+                                         (prowlarr_traefik_network | trim | length > 0) and
+                                         (prowlarr_traefik_network_driver is defined) and
+                                         (prowlarr_traefik_network_driver is not none) and
+                                         (prowlarr_traefik_network_driver | trim | length > 0) and
+                                         (prowlarr_traefik_network_subnet is defined) and
+                                         (prowlarr_traefik_network_subnet is not none) and
+                                         (prowlarr_traefik_network_subnet | trim | length > 0) }}'
+
+prowlarr_traefik_labels_default:
+  traefik.enable: 'true'
+  traefik.docker.network: '{{ prowlarr_traefik_network }}'
+
+prowlarr_traefik_labels_router:
+  traefik.http.routers.prowlarr-rtr.entrypoints: 'http'
+  traefik.http.routers.prowlarr-rtr.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
+  traefik.http.routers.prowlarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.prowlarr-rtr.priority: '20'
+  traefik.http.routers.prowlarr-rtr.service: 'prowlarr-rtr-svc'
+  traefik.http.services.prowlarr-rtr-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
+  traefik.http.routers.prowlarr-api-rtr.entrypoints: 'http'
+  traefik.http.routers.prowlarr-api-rtr.middlewares: 'globalHeaders@file,robotHeaders@file'
+  traefik.http.routers.prowlarr-api-rtr.priority: '30'
+  traefik.http.routers.prowlarr-api-rtr.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`) && (PathPrefix(`/api/websocket/`))'
+  traefik.http.routers.prowlarr-api-rtr.service: 'prowlarr-rtr-svc'
+
+prowlarr_traefik_labels_router_secure:
+  traefik.http.routers.prowlarr-rtr-secure.entrypoints: 'https'
+  traefik.http.routers.prowlarr-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
+  traefik.http.routers.prowlarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.prowlarr-rtr-secure.priority: '20'
+  traefik.http.routers.prowlarr-rtr-secure.service: 'prowlarr-rtr-secure-svc'
+  traefik.http.routers.prowlarr-rtr-secure.tls.certresolver: 'dns-cloudflare'
+  traefik.http.routers.prowlarr-rtr-secure.tls.options: 'tls-opts@file'
+  traefik.http.services.prowlarr-rtr-secure-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
+  traefik.http.routers.prowlarr-api-rtr-secure.entrypoints: 'https'
+  traefik.http.routers.prowlarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+  traefik.http.routers.prowlarr-api-rtr-secure.priority: '30'
+  traefik.http.routers.prowlarr-api-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`) && (PathPrefix(`/api/websocket/`))'
+  traefik.http.routers.prowlarr-api-rtr-secure.service: 'prowlarr-rtr-secure-svc'
+  traefik.http.routers.prowlarr-api-rtr-secure.tls.certresolver: 'dns-cloudflare'
+  traefik.http.routers.prowlarr-api-rtr-secure.tls.options: 'tls-opts@file'
+
+prowlarr_traefik_labels_themepark:
+  traefik.http.middlewares.themepark-portainer.plugin.themepark.app: '{{ prowlarr_basics_name }}'
+  traefik.http.middlewares.themepark-portainer.plugin.themepark.theme: '{{ prowlarr_traefik_themepark_theme }}'
+
+prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
+                             | combine(prowlarr_traefik_labels_router)
+                             | combine(prowlarr_traefik_labels_router_secure)
+                             | combine(prowlarr_traefik_labels_themepark) }}'
+
+################################
+# CLOUDFLARE
+################################
+
+prowlarr_cloudflare_record: '{{ prowlarr_traefik_subdomain }}'
+prowlarr_cloudflare_zone: '{{ prowlarr_traefik_domain }}'
+
+prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_record_type is defined) and
+                                    (prowlarr_cloudflare_record_type is not none) and
+                                    (prowlarr_cloudflare_record_type | trim | length > 0) and
+                                    (prowlarr_cloudflare_proxy is defined) and
+                                    (prowlarr_cloudflare_proxy is not none) and
+                                    (prowlarr_cloudflare_proxy | trim | length > 0) and
+                                    (prowlarr_cloudflare_api_token is defined) and
+                                    (prowlarr_cloudflare_api_token is not none) and
+                                    (prowlarr_cloudflare_api_token | trim | length > 0) }}'

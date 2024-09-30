@@ -1,0 +1,33 @@
+---
+
+- name: Apply prowlarr-exporter prometheus scrape config
+  ansible.builtin.blockinfile:
+    path: '{{ prowlarr_prometheus_paths_location }}/prometheus.yml'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - prowlarr-EXPORTER #"
+    block: |
+      {% filter indent(width=2, first=true) %}
+      - job_name: '{{ prowlarr_prometheus_exporter_name }}'
+        scrape_interval: 1m
+        static_configs:
+          - targets: ['{{ prowlarr_prometheus_exporter_name }}:{{ prowlarr_prometheus_exporter_cont_port }}']
+      {% endfilter %}
+  notify:
+    - restart prometheus
+
+- name: Create prowlarr prometheus exporter container
+  community.docker.docker_container:
+    name: '{{ prowlarr_prometheus_exporter_name }}'
+    image: '{{ prowlarr_prometheus_exporter_image_repo }}:{{ prowlarr_prometheus_exporter_image_tag }}'
+    command: ["prowlarr"]
+    networks: '{{ prowlarr_prometheus_exporter_networks }}'
+    env:
+      PUID: '{{ prowlarr_prometheus_exporter_env_puid }}'
+      PGID: '{{ prowlarr_prometheus_exporter_env_pgid }}'
+      TZ: '{{ prowlarr_prometheus_exporter_env_timezone }}'
+      PORT: '{{ prowlarr_prometheus_exporter_cont_port }}'
+      URL: 'http://{{ prowlarr_basics_name }}:{{ prowlarr_ports_cont }}'
+      API_KEY: '{{ prowlarr_api_key }}'
+      ENABLE_ADDITIONAL_METRICS: 'true'
+    ports:
+      - '{{ prowlarr_prometheus_exporter_host_port }}:{{ prowlarr_prometheus_exporter_cont_port }}'
+    restart_policy: '{{ prowlarr_prometheus_exporter_restart_policy }}'

@@ -1,0 +1,102 @@
+---
+
+################################
+# API
+################################
+
+prowlarr_api_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          62363731656665633535336462383036313030346338313332396436316433346661383730323664
+          3234356230666438343964346337373939313961333563330a353531653332363562636361303862
+          31316236323562323631656263366264356464333930323036356336623365353939303338323264
+          3634636264313065340a623861663537656465353434623362333238313135633361396365626337
+          66356532346431343136626666333236643730363336383938326434663439626534326265363565
+          6332366661383830323136663965303365653964363034323035
+
+################################
+# BASICS
+################################
+
+prowlarr_basics_name: 'prowlarr'
+prowlarr_basics_image_repo: 'ghcr.io/hotio/prowlarr'
+prowlarr_basics_image_tag: 'nightly'
+prowlarr_basics_restart_policy: 'unless-stopped'
+
+################################
+# NETWORK
+################################
+
+prowlarr_network_backend: 'proxy'  ## allows backend docker communication between prowlarr and companion apps, such as recyclarr
+prowlarr_network_backend_driver: 'bridge'  ## only required if network doesn't exist
+prowlarr_network_backend_subnet: '172.62.0.0/24'  ## only required if network doesn't exist
+
+################################
+# ENV
+################################
+
+prowlarr_env_timezone: 'Australia/Melbourne'
+prowlarr_env_puid: 'ansible'
+prowlarr_env_pgid: 'ansible'
+
+################################
+# PORTS
+################################
+
+prowlarr_ports_host: '9696'
+prowlarr_ports_cont: '9696'
+
+################################
+# PATHS
+################################
+
+prowlarr_paths_folder: '{{ prowlarr_basics_name }}'
+prowlarr_paths_location: '/opt/{{ prowlarr_paths_folder }}'
+
+################################
+# BINDS
+################################
+
+prowlarr_volumes_binds_default:
+  - /etc/localtime:/etc/localtime:ro
+  - '{{ prowlarr_paths_location }}:/config'
+
+################################
+# AUTHELIA
+################################
+
+prowlarr_authelia_name: 'authelia'
+
+################################
+# TRAEFIK
+################################
+
+prowlarr_traefik_subdomain: '{{ prowlarr_basics_name }}'
+prowlarr_traefik_domain: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36353561326634656630373665396136663931353734653331626465336531666462356630313061
+          3734333965366562386233623337373838326562666230310a356239383231363535306530613865
+          33656565336530373937373034356165353936653439333565613234636338356139333630316230
+          6465386639376431660a336262336264303562333039363961623830646365313962626164343564
+          35383265343864656465623732393937633330303931633630303264353461313335
+prowlarr_traefik_port: '9696'
+prowlarr_traefik_themepark_theme: 'hotline'  ## See https://github.com/themepark-dev/theme.park
+
+  ## traefik docker network
+prowlarr_traefik_network: 'traefik_proxy'
+prowlarr_traefik_network_driver: 'bridge'  ## only required if network doesn't exist
+prowlarr_traefik_network_subnet: '172.21.0.0/24'  ## only required if network doesn't exist
+
+################################
+# CLOUDFLARE
+################################
+
+prowlarr_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
+prowlarr_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
+prowlarr_cloudflare_api_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          37663832313530663039323766323637663338616361613235653834306266313566633731623238
+          3137663839633337346136613964353964373365656661350a666566643964373333643139373632
+          61376336653563663665646461373361376432366264633734363661616365333236356139363131
+          3934346539336637320a373362643362356630666235326534643164313165386538643734613732
+          39663833363365623437613632336135636362366634346339633132383562353635333037393537
+          3437376437326130643962643132646163313739363864343033

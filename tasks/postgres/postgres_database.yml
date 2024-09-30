@@ -1,0 +1,43 @@
+---
+
+- name: Check for existing postgres databases
+  block:
+    - name: Ping for existing main database
+      community.postgresql.postgresql_ping:
+        login_host: '{{ prowlarr_postgres_basics_host }}'
+        login_user: '{{ prowlarr_postgres_auth_user }}'
+        login_password: '{{ prowlarr_postgres_auth_password }}'
+        port: '{{ prowlarr_postgres_ports_host }}'
+        db: '{{ prowlarr_postgres_database_main }}'
+      register: prowlarr_postgres_maindb
+
+    - name: Ping for existing log database
+      community.postgresql.postgresql_ping:
+        login_host: '{{ prowlarr_postgres_basics_host }}'
+        login_user: '{{ prowlarr_postgres_auth_user }}'
+        login_password: '{{ prowlarr_postgres_auth_password }}'
+        port: '{{ prowlarr_postgres_ports_host }}'
+        db: '{{ prowlarr_postgres_database_log }}'
+      register: prowlarr_postgres_logdb
+
+- name: Create postgres databases
+  block:
+    - name: Create postgres main database
+      when: not prowlarr_postgres_maindb == true
+      community.postgresql.postgresql_db:
+        login_host: '{{ prowlarr_postgres_basics_host }}'
+        login_user: '{{ prowlarr_postgres_auth_user }}'
+        login_password: '{{ prowlarr_postgres_auth_password }}'
+        port: '{{ prowlarr_postgres_ports_host }}'
+        name: '{{ prowlarr_postgres_database_main }}'
+        state: 'present'
+
+    - name: Create postgres log database
+      when: not prowlarr_postgres_logdb == true
+      community.postgresql.postgresql_db:
+        login_host: '{{ prowlarr_postgres_basics_host }}'
+        login_user: '{{ prowlarr_postgres_auth_user }}'
+        login_password: '{{ prowlarr_postgres_auth_password }}'
+        port: '{{ prowlarr_postgres_ports_host }}'
+        name: '{{ prowlarr_postgres_database_log }}'
+        state: 'present'
