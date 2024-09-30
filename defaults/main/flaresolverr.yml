@@ -16,9 +16,9 @@ prowlarr_flaresolverr_basics_restart_policy: 'unless-stopped'
 # ENV
 ################################
 
-prowlarr_flaresolverr_env_timezone: 'Australia/Melbourne'
-prowlarr_flaresolverr_env_puid: 'ansible'
-prowlarr_flaresolverr_env_pgid: 'ansible'
+prowlarr_flaresolverr_env_timezone: []
+prowlarr_flaresolverr_env_puid: []
+prowlarr_flaresolverr_env_pgid: []
 
 ################################
 # PORTS

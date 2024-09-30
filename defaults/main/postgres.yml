@@ -4,7 +4,7 @@
 # BASICS
 ################################
 
-prowlarr_postgres_basics_host: '192.168.80.68'  # machine address for ansible postgres module to ping database
+prowlarr_postgres_basics_host: []  # machine address for ansible postgres module to ping database
 prowlarr_postgres_basics_name: 'postgres'
 prowlarr_postgres_basics_image_repo: 'postgres'
 prowlarr_postgres_basics_image_tag: '14'
@@ -15,16 +15,16 @@ prowlarr_postgres_basics_restart_policy: 'unless-stopped'
 ################################
 
 prowlarr_postgres_network: 'postgres'
-prowlarr_postgres_network_driver: 'bridge'  ## only required if network doesn't exist
-prowlarr_postgres_network_subnet: '172.69.0.0/24'  ## only required if network doesn't exist
+prowlarr_postgres_network_driver: []  ## only required if network doesn't exist
+prowlarr_postgres_network_subnet: []  ## only required if network doesn't exist
 
 ################################
 # ENV
 ################################
 
 prowlarr_postgres_env_timezone: 'Australia/Melbourne'
-prowlarr_postgres_env_puid: 'ansible'
-prowlarr_postgres_env_pgid: 'ansible'
+prowlarr_postgres_env_puid: []
+prowlarr_postgres_env_pgid: []
 
 ################################
 # PORTS
@@ -56,14 +56,8 @@ prowlarr_postgres_binds_keys_mapping:
 # AUTH
 ################################
 
-prowlarr_postgres_auth_user: 'lebowski89'
-prowlarr_postgres_auth_password: !vault |
-          $ANSIBLE_VAULT;1.1;AES256
-          35393334353334313564656563343137353438643730316632373131623362616230353035343266
-          6165653335666132363863386565643631376264623330370a323134373431386265303134623465
-          38643335393635343031393234306361623035303936343565623639346137323861336435303863
-          3461303939373933630a326231333831633539343163393066316136633931393932393166383836
-          6430
+prowlarr_postgres_auth_user: []
+prowlarr_postgres_auth_password: []
 prowlarr_postgres_auth_password_file: 'postgres_key.txt'
 
 ################################
@@ -80,5 +74,5 @@ prowlarr_postgres_database_log: 'prowlarr-log'
   ## warning: the below toggles will delete any existing sqlite database files in the prowlarr appdir.
   ## toggle false if you're planning to migrate db data. See: https://wiki.servarr.com/prowlarr/postgres-setup
 
-prowlarr_postgres_clean_files: true  # true will delete any existing sqlite database files in the prowlarr appdir.
-prowlarr_postgres_clean_folders: true  # true will delete sqlite backups folder in the prowlarr appdir.
+prowlarr_postgres_clean_files: false  # true will delete any existing sqlite database files in the prowlarr appdir.
+prowlarr_postgres_clean_folders: false  # true will delete sqlite backups folder in the prowlarr appdir.
