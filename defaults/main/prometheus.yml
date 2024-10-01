@@ -14,16 +14,16 @@ prowlarr_prometheus_basics_restart_policy: 'unless-stopped'
 ################################
 
 prowlarr_prometheus_network: 'prometheus'
-prowlarr_prometheus_network_driver: []
-prowlarr_prometheus_network_subnet: []
+prowlarr_prometheus_network_driver: ''
+prowlarr_prometheus_network_subnet: ''
 
 ################################
 # ENV
 ################################
 
-prowlarr_prometheus_env_timezone: []
-prowlarr_prometheus_env_puid: []
-prowlarr_prometheus_env_pgid: []
+prowlarr_prometheus_env_timezone: ''
+prowlarr_prometheus_env_puid: ''
+prowlarr_prometheus_env_pgid: ''
 
 ################################
 # PORTS
@@ -56,7 +56,7 @@ prowlarr_prometheus_binds_data_mapping:
 ################################
 
 prowlarr_prometheus_traefik_subdomain: '{{ prowlarr_prometheus_basics_name }}'
-prowlarr_prometheus_traefik_domain: []
+prowlarr_prometheus_traefik_domain: ''
 prowlarr_prometheus_traefik_network: 'traefik_proxy'
 prowlarr_prometheus_traefik_port: '9090'
 
@@ -66,7 +66,7 @@ prowlarr_prometheus_traefik_port: '9090'
 
 prowlarr_prometheus_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
 prowlarr_prometheus_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
-prowlarr_prometheus_cloudflare_api_token: []
+prowlarr_prometheus_cloudflare_api_token: ''
 
 ################################
 # METRICS

@@ -4,7 +4,7 @@
 # API
 ################################
 
-prowlarr_api_key: []
+prowlarr_api_key: ''
 
 ################################
 # BASICS
@@ -20,16 +20,16 @@ prowlarr_basics_restart_policy: 'unless-stopped'
 ################################
 
 prowlarr_network_backend: 'proxy'  ## allows backend docker communication between prowlarr and companion apps, such as recyclarr
-prowlarr_network_backend_driver: []  ## only required if network doesn't exist
-prowlarr_network_backend_subnet: []  ## only required if network doesn't exist
+prowlarr_network_backend_driver: ''  ## only required if network doesn't exist
+prowlarr_network_backend_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # ENV
 ################################
 
-prowlarr_env_timezone: []
-prowlarr_env_puid: []
-prowlarr_env_pgid: []
+prowlarr_env_timezone: ''
+prowlarr_env_puid: ''
+prowlarr_env_pgid: ''
 
 ################################
 # PORTS
@@ -64,14 +64,14 @@ prowlarr_authelia_name: 'authelia'
 ################################
 
 prowlarr_traefik_subdomain: '{{ prowlarr_basics_name }}'
-prowlarr_traefik_domain: []
+prowlarr_traefik_domain: ''
 prowlarr_traefik_port: '9696'
 prowlarr_traefik_themepark_theme: 'hotline'  ## See https://github.com/themepark-dev/theme.park
 
   ## traefik docker network
 prowlarr_traefik_network: 'traefik_proxy'
-prowlarr_traefik_network_driver: []  ## only required if network doesn't exist
-prowlarr_traefik_network_subnet: []  ## only required if network doesn't exist
+prowlarr_traefik_network_driver: ''  ## only required if network doesn't exist
+prowlarr_traefik_network_subnet: ''  ## only required if network doesn't exist
 
 ################################
 # CLOUDFLARE
@@ -79,4 +79,4 @@ prowlarr_traefik_network_subnet: []  ## only required if network doesn't exist
 
 prowlarr_cloudflare_record_type: 'A'  ## A (IPV4), AAAA (IPV6), CNAME, etc
 prowlarr_cloudflare_proxy: 'true'  ## true for cloudflare DNS SSL
-prowlarr_cloudflare_api_token: []
+prowlarr_cloudflare_api_token: ''
