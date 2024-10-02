@@ -4,19 +4,7 @@
 # BASICS
 ################################
 
-prowlarr_flaresolverr_is_enabled: '{{ (prowlarr_flaresolverr_basics_name is defined) and
-                                      (prowlarr_flaresolverr_basics_name is not none) and
-                                      (prowlarr_flaresolverr_basics_name | trim | length > 0) and
-                                      (prowlarr_flaresolverr_basics_image_repo is defined) and
-                                      (prowlarr_flaresolverr_basics_image_repo is not none) and
-                                      (prowlarr_flaresolverr_basics_image_repo | trim | length > 0) and
-                                      (prowlarr_flaresolverr_basics_image_tag is defined) and
-                                      (prowlarr_flaresolverr_basics_image_tag is not none) and
-                                      (prowlarr_flaresolverr_basics_image_tag | trim | length > 0) and
-                                      (prowlarr_flaresolverr_basics_restart_policy is defined) and
-                                      (prowlarr_flaresolverr_basics_restart_policy is not none) and
-                                      (prowlarr_flaresolverr_basics_restart_policy | trim | length > 0) and
-                                      (prowlarr_flaresolverr_env_timezone is defined) and
+prowlarr_flaresolverr_is_enabled: '{{ (prowlarr_flaresolverr_env_timezone is defined) and
                                       (prowlarr_flaresolverr_env_timezone is not none) and
                                       (prowlarr_flaresolverr_env_timezone | trim | length > 0) and
                                       (prowlarr_flaresolverr_env_puid is defined) and
@@ -24,16 +12,7 @@ prowlarr_flaresolverr_is_enabled: '{{ (prowlarr_flaresolverr_basics_name is defi
                                       (prowlarr_flaresolverr_env_puid | trim | length > 0) and
                                       (prowlarr_flaresolverr_env_pgid is defined) and
                                       (prowlarr_flaresolverr_env_pgid is not none) and
-                                      (prowlarr_flaresolverr_env_pgid | trim | length > 0) and
-                                      (prowlarr_flaresolverr_ports_host is defined) and
-                                      (prowlarr_flaresolverr_ports_host is not none) and
-                                      (prowlarr_flaresolverr_ports_host | trim | length > 0) and
-                                      (prowlarr_flaresolverr_ports_cont is defined) and
-                                      (prowlarr_flaresolverr_ports_cont is not none) and
-                                      (prowlarr_flaresolverr_ports_cont | trim | length > 0) and
-                                      (prowlarr_flaresolverr_ports_metrics is defined) and
-                                      (prowlarr_flaresolverr_ports_metrics is not none) and
-                                      (prowlarr_flaresolverr_ports_metrics | trim | length > 0) }}'
+                                      (prowlarr_flaresolverr_env_pgid | trim | length > 0) }}'
 
 ################################
 # ENV

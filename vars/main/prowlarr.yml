@@ -12,16 +12,6 @@ prowlarr_api_key_is_enabled: '{{ (prowlarr_api_key is defined) and
 # NETWORK
 ################################
 
-prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend is defined) and
-                                         (prowlarr_network_backend is not none) and
-                                         (prowlarr_network_backend | trim | length > 0) and
-                                         (prowlarr_network_backend_driver is defined) and
-                                         (prowlarr_network_backend_driver is not none) and
-                                         (prowlarr_network_backend_driver | trim | length > 0) and
-                                         (prowlarr_network_backend_subnet is defined) and
-                                         (prowlarr_network_backend_subnet is not none) and
-                                         (prowlarr_network_backend_subnet | trim | length > 0) }}'
-
 prowlarr_network_default_bind:
   - name: '{{ prowlarr_network_backend }}'
 prowlarr_network_postgres_bind:
@@ -32,16 +22,22 @@ prowlarr_network_prometheus_bind:
   - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_docker_networks: '{{ prowlarr_network_default_bind
-                            + (prowlarr_network_postgres_bind
-                               if prowlarr_postgres_is_enabled
-                               else [])
-                            + (prowlarr_network_traefik_bind
-                               if prowlarr_traefik_is_enabled
-                               else [])
-                            + (prowlarr_network_prometheus_bind
-                               if prowlarr_prometheus_is_enabled
-                               else []) }}'
+                              + (prowlarr_network_postgres_bind
+                                 if prowlarr_postgres_is_enabled
+                                 else [])
+                              + (prowlarr_network_traefik_bind
+                                 if prowlarr_traefik_is_enabled
+                                 else [])
+                              + (prowlarr_network_prometheus_bind
+                                 if prowlarr_prometheus_is_enabled
+                                 else []) }}'
 
+prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend_driver is defined) and
+                                         (prowlarr_network_backend_driver is not none) and
+                                         (prowlarr_network_backend_driver | trim | length > 0) and
+                                         (prowlarr_network_backend_subnet is defined) and
+                                         (prowlarr_network_backend_subnet is not none) and
+                                         (prowlarr_network_backend_subnet | trim | length > 0) }}'
 
 ################################
 # BINDS
@@ -60,32 +56,6 @@ prowlarr_authelia_is_enabled: '{{ (prowlarr_authelia_name is defined) and
 ################################
 # TRAEFIK
 ################################
-
-prowlarr_traefik_is_enabled: '{{ (prowlarr_traefik_network is defined) and
-                                 (prowlarr_traefik_network is not none) and
-                                 (prowlarr_traefik_network | trim | length > 0) and
-                                 (prowlarr_traefik_subdomain is defined) and
-                                 (prowlarr_traefik_subdomain is not none) and
-                                 (prowlarr_traefik_subdomain | trim | length > 0) and
-                                 (prowlarr_traefik_domain is defined) and
-                                 (prowlarr_traefik_domain is not none) and
-                                 (prowlarr_traefik_domain | trim | length > 0) and
-                                 (prowlarr_traefik_port is defined) and
-                                 (prowlarr_traefik_port is not none) and
-                                 (prowlarr_traefik_port | trim | length > 0) and
-                                 (prowlarr_traefik_themepark_theme is defined) and
-                                 (prowlarr_traefik_themepark_theme is not none) and
-                                 (prowlarr_traefik_themepark_theme | trim | length > 0) }}'
-
-prowlarr_traefik_network_is_enabled: '{{ (prowlarr_traefik_network is defined) and
-                                         (prowlarr_traefik_network is not none) and
-                                         (prowlarr_traefik_network | trim | length > 0) and
-                                         (prowlarr_traefik_network_driver is defined) and
-                                         (prowlarr_traefik_network_driver is not none) and
-                                         (prowlarr_traefik_network_driver | trim | length > 0) and
-                                         (prowlarr_traefik_network_subnet is defined) and
-                                         (prowlarr_traefik_network_subnet is not none) and
-                                         (prowlarr_traefik_network_subnet | trim | length > 0) }}'
 
 prowlarr_traefik_labels_default:
   traefik.enable: 'true'
@@ -130,6 +100,17 @@ prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
                              | combine(prowlarr_traefik_labels_router_secure)
                              | combine(prowlarr_traefik_labels_themepark) }}'
 
+prowlarr_traefik_is_enabled: '{{ (prowlarr_traefik_domain is defined) and
+                                 (prowlarr_traefik_domain is not none) and
+                                 (prowlarr_traefik_domain | trim | length > 0) }}'
+
+prowlarr_traefik_network_is_enabled: '{{ (prowlarr_traefik_network_driver is defined) and
+                                         (prowlarr_traefik_network_driver is not none) and
+                                         (prowlarr_traefik_network_driver | trim | length > 0) and
+                                         (prowlarr_traefik_network_subnet is defined) and
+                                         (prowlarr_traefik_network_subnet is not none) and
+                                         (prowlarr_traefik_network_subnet | trim | length > 0) }}'
+
 ################################
 # CLOUDFLARE
 ################################
@@ -137,12 +118,6 @@ prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
 prowlarr_cloudflare_record: '{{ prowlarr_traefik_subdomain }}'
 prowlarr_cloudflare_zone: '{{ prowlarr_traefik_domain }}'
 
-prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_record_type is defined) and
-                                    (prowlarr_cloudflare_record_type is not none) and
-                                    (prowlarr_cloudflare_record_type | trim | length > 0) and
-                                    (prowlarr_cloudflare_proxy is defined) and
-                                    (prowlarr_cloudflare_proxy is not none) and
-                                    (prowlarr_cloudflare_proxy | trim | length > 0) and
-                                    (prowlarr_cloudflare_api_token is defined) and
+prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_api_token is defined) and
                                     (prowlarr_cloudflare_api_token is not none) and
                                     (prowlarr_cloudflare_api_token | trim | length > 0) }}'
