@@ -1,7 +1,7 @@
 Prowlarr Suite
 =========
 
-    Ansible role to automate the full set-up of Prowlarr - an indexer manager for Usenet and BitTorrent users.
+    Standalone Ansible role to automate the full set-up of Prowlarr - an indexer manager for Usenet and BitTorrent users.
       - Includes the installation of Docker (Debian-based distros) and Ansible dependencies within the role.
       - Includes the option of setting up and connecting Prowlarr to a Postgres database.
       - Includes the option of setting up Prometheus and a Prowlarr Promtheus exporter to gather various metrics about your Prowlarr usage and music collection.
