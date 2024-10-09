@@ -248,6 +248,22 @@
     restart_policy: '{{ prowlarr_flaresolverr_basics_restart_policy }}'
 
 ################################
+# THEMEPARK
+################################
+
+- name: Run themepark tasks
+  when: prowlarr_themepark_local_is_enabled
+  block:
+    - name: Register themepark container
+      community.docker.docker_container_info:
+        name: '{{ prowlarr_themepark_basics_name }}'
+      register: prowlarr_themepark_container_result
+
+    - name: Include themepark tasks
+      when: not prowlarr_themepark_container_result.exists
+      ansible.builtin.include_tasks: 'sub_tasks/themepark.yml'
+
+################################
 # CONTAINER
 ################################
 
@@ -257,10 +273,7 @@
     name: '{{ prowlarr_basics_name }}'
     image: '{{ prowlarr_basics_image_repo }}:{{ prowlarr_basics_image_tag }}'
     networks: '{{ prowlarr_docker_networks }}'
-    env:
-      PUID: '{{ prowlarr_env_puid }}'
-      PGID: '{{ prowlarr_env_pgid }}'
-      TZ: '{{ prowlarr_env_timezone }}'
+    env: '{{ prowlarr_docker_envs }}'
     ports:
       - '{{ prowlarr_ports_host }}:{{ prowlarr_ports_cont }}'
     volumes: '{{ prowlarr_docker_volumes }}'
@@ -272,10 +285,7 @@
     name: '{{ prowlarr_basics_name }}'
     image: '{{ prowlarr_basics_image_repo }}:{{ prowlarr_basics_image_tag }}'
     networks: '{{ prowlarr_docker_networks }}'
-    env:
-      PUID: '{{ prowlarr_env_puid }}'
-      PGID: '{{ prowlarr_env_pgid }}'
-      TZ: '{{ prowlarr_env_timezone }}'
+    env: '{{ prowlarr_docker_envs }}'
     labels: '{{ prowlarr_traefik_labels }}'
     ports:
       - '{{ prowlarr_ports_host }}:{{ prowlarr_ports_cont }}'

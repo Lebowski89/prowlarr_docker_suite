@@ -1,0 +1,31 @@
+---
+
+################################
+# APPDATA
+################################
+
+- name: Create themepark appdata directory
+  ansible.builtin.file:
+    path: '{{ prowlarr_themepark_paths_location }}'
+    state: directory
+    owner: '{{ prowlarr_themepark_env_puid }}'
+    group: '{{ prowlarr_themepark_env_pgid }}'
+    mode: '0755'
+
+################################
+# CONTAINER
+################################
+
+- name: Create themepark container
+  community.docker.docker_container:
+    name: '{{ prowlarr_themepark_basics_name }}'
+    image: '{{ prowlarr_themepark_basics_image_repo }}:{{ prowlarr_themepark_basics_image_tag }}'
+    networks: '{{ prowlarr_network_backend }}'
+    env:
+      PUID: '{{ prowlarr_themepark_env_puid }}'
+      PGID: '{{ prowlarr_themepark_env_pgid }}'
+      TZ: '{{ prowlarr_themepark_env_timezone }}'
+    ports:
+      - '{{ prowlarr_themepark_ports_host }}:{{ prowlarr_themepark_ports_cont }}'    
+    volumes: '{{ prowlarr_themepark_bind_mount }}'
+    restart_policy: '{{ prowlarr_themepark_basics_restart_policy }}'

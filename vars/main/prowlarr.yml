@@ -40,10 +40,33 @@ prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend_driver is def
                                          (prowlarr_network_backend_subnet | trim | length > 0) }}'
 
 ################################
+# ENV
+################################
+
+prowlarr_env_default:
+  PUID: '{{ prowlarr_env_puid }}'
+  PGID: '{{ prowlarr_env_pgid }}'
+  TZ: '{{ prowlarr_env_timezone }}'
+
+prowlarr_env_themepark_local:
+  TP_SCHEME: 'http'
+  TP_DOMAIN: '{{ prowlarr_themepark_domain_local }}'
+  TP_HOTIO: 'true'
+  TP_THEME: '{{ prowlarr_theme }}'
+
+prowlarr_docker_envs: '{{ prowlarr_env_default
+                          | combine((prowlarr_env_themepark_local
+                                     if prowlarr_themepark_local_is_enabled
+                                     else [])) }}'
+
+################################
 # BINDS
 ################################
 
-prowlarr_docker_volumes: '{{ prowlarr_volumes_binds_default }}'
+prowlarr_docker_volumes: '{{ prowlarr_volumes_binds_default
+                             + (prowlarr_volumes_binds_themepark
+                                if prowlarr_themepark_local_is_enabled
+                                else []) }}'
 
 ################################
 # AUTHELIA
@@ -92,8 +115,8 @@ prowlarr_traefik_labels_router_secure:
   traefik.http.routers.prowlarr-api-rtr-secure.tls.options: 'tls-opts@file'
 
 prowlarr_traefik_labels_themepark:
-  traefik.http.middlewares.themepark-portainer.plugin.themepark.app: '{{ prowlarr_basics_name }}'
-  traefik.http.middlewares.themepark-portainer.plugin.themepark.theme: '{{ prowlarr_traefik_themepark_theme }}'
+  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.app: 'prowlarr'
+  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_theme }}'
 
 prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
                              | combine(prowlarr_traefik_labels_router)
@@ -121,3 +144,20 @@ prowlarr_cloudflare_zone: '{{ prowlarr_traefik_domain }}'
 prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_api_token is defined) and
                                     (prowlarr_cloudflare_api_token is not none) and
                                     (prowlarr_cloudflare_api_token | trim | length > 0) }}'
+
+################################
+# THEME
+################################
+
+prowlarr_themepark_local_is_enabled: '{{ (prowlarr_themepark_env_timezone is defined) and
+                                         (prowlarr_themepark_env_timezone is not none) and
+                                         (prowlarr_themepark_env_timezone | trim | length > 0) and
+                                         (prowlarr_themepark_env_puid is defined) and
+                                         (prowlarr_themepark_env_puid is not none) and
+                                         (prowlarr_themepark_env_puid | trim | length > 0) and
+                                         (prowlarr_themepark_env_pgid is defined) and
+                                         (prowlarr_themepark_env_pgid is not none) and
+                                         (prowlarr_themepark_env_pgid | trim | length > 0) and
+                                         (prowlarr_themepark_domain_local is defined) and
+                                         (prowlarr_themepark_domain_local is not none) and
+                                         (prowlarr_themepark_domain_local | trim | length > 0) }}'

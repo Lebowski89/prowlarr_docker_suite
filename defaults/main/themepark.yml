@@ -1,0 +1,51 @@
+---
+
+################################
+# BASICS
+################################
+
+prowlarr_themepark_basics_name: 'theme-park'
+prowlarr_themepark_basics_image_repo: 'ghcr.io/themepark-dev/theme.park'
+prowlarr_themepark_basics_image_tag: 'latest'
+prowlarr_themepark_basics_restart_policy: 'unless-stopped'
+
+################################
+# ENV
+################################
+
+prowlarr_themepark_env_timezone: ''
+prowlarr_themepark_env_puid: ''
+prowlarr_themepark_env_pgid: ''
+
+################################
+# DOMAIN (LOCAL)
+################################
+
+  ## Fill if wanting themes served locally via http on local network.
+  ## Will deploy theme-park in a docker container.
+  ## Must be accessible to your browser - try: '<local_machine_ip>:{{ prowlarr_themepark_ports_host }}'
+
+prowlarr_themepark_domain_local: ''
+
+################################
+# PORTS
+################################
+
+prowlarr_themepark_ports_host: '8089'
+prowlarr_themepark_ports_cont: '80'
+
+################################
+# PATHS
+################################
+
+prowlarr_themepark_paths_folder: '{{ prowlarr_themepark_basics_name }}'
+prowlarr_themepark_paths_location: '/opt/{{ prowlarr_themepark_paths_folder }}'
+
+################################
+# BINDS
+################################
+
+prowlarr_themepark_bind_mount:
+  - '{{ prowlarr_themepark_paths_location }}:/config'
+
+

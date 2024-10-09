@@ -57,7 +57,7 @@ prowlarr_prometheus_binds_data_mapping:
 
 prowlarr_prometheus_traefik_subdomain: '{{ prowlarr_prometheus_basics_name }}'
 prowlarr_prometheus_traefik_domain: ''
-prowlarr_prometheus_traefik_network: 'traefik_proxy'
+prowlarr_prometheus_traefik_network: '{{ prowlarr_traefik_network }}'
 prowlarr_prometheus_traefik_port: '9090'
 
 ################################
@@ -83,6 +83,8 @@ prowlarr_prometheus_exporter_name: '{{ prowlarr_basics_name }}_exporter'
 prowlarr_prometheus_exporter_image_repo: 'ghcr.io/onedr0p/exportarr'
 prowlarr_prometheus_exporter_image_tag: 'v2.0.1'
 prowlarr_prometheus_exporter_restart_policy: 'unless-stopped'
+prowlarr_prometheus_exporter_env_puid: 'ansible'
+prowlarr_prometheus_exporter_env_pgid: 'ansible'
+prowlarr_prometheus_exporter_env_timezone: 'Australia/Melbourne'
 prowlarr_prometheus_exporter_host_port: '9710'
 prowlarr_prometheus_exporter_cont_port: '9710'
-
