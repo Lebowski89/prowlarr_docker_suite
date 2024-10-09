@@ -30,7 +30,7 @@
         login_password: '{{ prowlarr_postgres_auth_password }}'
         port: '{{ prowlarr_postgres_ports_host }}'
         name: '{{ prowlarr_postgres_database_main }}'
-        state: 'present'
+        state: present
 
     - name: Create postgres log database
       when: not prowlarr_postgres_logdb == true
@@ -40,4 +40,4 @@
         login_password: '{{ prowlarr_postgres_auth_password }}'
         port: '{{ prowlarr_postgres_ports_host }}'
         name: '{{ prowlarr_postgres_database_log }}'
-        state: 'present'
+        state: present

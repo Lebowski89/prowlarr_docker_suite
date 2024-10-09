@@ -30,7 +30,7 @@
 
     - name: Include docker install tasks
       when: '"docker-ce" not in ansible_facts.packages'
-      ansible.builtin.include_tasks: 'sub_tasks/docker.yml'
+      ansible.builtin.include_tasks: sub_tasks/docker.yml
 
 ################################
 # CLEAN UP
@@ -124,8 +124,8 @@
       when: prowlarr_api_key_is_enabled
       community.general.xml:
         path: '{{ prowlarr_paths_location }}/config.xml'
-        xpath: "/Config/ApiKey"
-        content: "text"
+        xpath: /Config/ApiKey
+        content: text
       register: xml_prowlarr_api
 
     - name: Prowlarr config.xml | insert existing api key
@@ -134,15 +134,15 @@
         - ((xml_prowlarr_api.matches[0].ApiKey is defined) and (xml_prowlarr_api.matches[0].ApiKey != prowlarr_api_key))
       community.general.xml:
         path: '{{ prowlarr_paths_location }}/config.xml'
-        xpath: '/Config/ApiKey'
+        xpath: /Config/ApiKey
         value: '{{ prowlarr_api_key }}'
 
     - name: Prowlarr config.xml | Lookup AuthenticationMethod value
       when: prowlarr_authelia_is_enabled
       community.general.xml:
         path: '{{ prowlarr_paths_location }}/config.xml'
-        xpath: "/Config/AuthenticationMethod"
-        content: "text"
+        xpath: /Config/AuthenticationMethod
+        content: text
       register: xml_prowlarr_external
 
     - name: Register authelia container
@@ -158,8 +158,8 @@
         - ((xml_prowlarr_external.matches[0].AuthenticationMethod is defined) and (xml_prowlarr_external.matches[0].AuthenticationMethod != 'External'))
       community.general.xml:
         path: '{{ prowlarr_paths_location }}/config.xml'
-        xpath: '/Config/AuthenticationMethod'
-        value: 'External'
+        xpath: /Config/AuthenticationMethod
+        value: External
 
 ################################
 # POSTGRES
@@ -167,15 +167,15 @@
 
 - name: Include postgres container tasks
   when: prowlarr_postgres_is_enabled
-  ansible.builtin.include_tasks: 'postgres/postgres_container.yml'
+  ansible.builtin.include_tasks: postgres/postgres_container.yml
 
 - name: Include postgres database tasks
   when: prowlarr_postgres_is_enabled
-  ansible.builtin.include_tasks: 'postgres/postgres_database.yml'
+  ansible.builtin.include_tasks: postgres/postgres_database.yml
 
 - name: Include postgres prowlarr config.xml tasks
   when: prowlarr_postgres_is_enabled
-  ansible.builtin.include_tasks: 'postgres/postgres_config_xml.yml'
+  ansible.builtin.include_tasks: postgres/postgres_config_xml.yml
 
 ################################
 # TRAEFIK
@@ -210,7 +210,7 @@
 
 - name: Include cloudflare tasks
   when: prowlarr_cloudflare_is_enabled
-  ansible.builtin.include_tasks: 'sub_tasks/cloudflare.yml'
+  ansible.builtin.include_tasks: sub_tasks/cloudflare.yml
 
 ################################
 # METRICS
@@ -218,17 +218,17 @@
 
 - name: Include prometheus container tasks
   when: prowlarr_prometheus_is_enabled
-  ansible.builtin.include_tasks: 'prometheus/prometheus_container.yml'
+  ansible.builtin.include_tasks: prometheus/prometheus_container.yml
 
 - name: Include prometheus exporter tasks
   when:
     - prowlarr_prometheus_is_enabled
     - prowlarr_prometheus_exporter_is_enabled
-  ansible.builtin.include_tasks: 'prometheus/prometheus_exporter.yml'
+  ansible.builtin.include_tasks: prometheus/prometheus_exporter.yml
 
 - name: Include prometheus cloudflare tasks
   when: prowlarr_prometheus_is_enabled
-  ansible.builtin.include_tasks: 'prometheus/prometheus_cloudflare.yml'
+  ansible.builtin.include_tasks: prometheus/prometheus_cloudflare.yml
 
 ################################
 # FLARESOLVERR
@@ -261,7 +261,7 @@
 
     - name: Include themepark tasks
       when: not prowlarr_themepark_container_result.exists
-      ansible.builtin.include_tasks: 'sub_tasks/themepark.yml'
+      ansible.builtin.include_tasks: sub_tasks/themepark.yml
 
 ################################
 # CONTAINER
