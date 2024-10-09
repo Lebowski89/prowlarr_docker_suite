@@ -87,4 +87,7 @@ prowlarr_cloudflare_api_token: ''
 # THEME
 ################################
 
-prowlarr_theme: 'hotline'  ## See https://github.com/themepark-dev/theme.park
+  ## See https://github.com/themepark-dev/theme.park
+
+prowlarr_theme_local: 'hotline'  ## theme to use for local theme-park deployment
+prowlarr_theme_traefik: 'hotpink'  ## theme to use for traefik theme-park plugin middleware

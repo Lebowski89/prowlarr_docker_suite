@@ -52,7 +52,7 @@ prowlarr_env_themepark_local:
   TP_SCHEME: 'http'
   TP_DOMAIN: '{{ prowlarr_themepark_domain_local }}'
   TP_HOTIO: 'true'
-  TP_THEME: '{{ prowlarr_theme }}'
+  TP_THEME: '{{ prowlarr_theme_local }}'
 
 prowlarr_docker_envs: '{{ prowlarr_env_default
                           | combine((prowlarr_env_themepark_local
@@ -87,7 +87,7 @@ prowlarr_traefik_labels_default:
 prowlarr_traefik_labels_router:
   traefik.http.routers.prowlarr-rtr.entrypoints: 'http'
   traefik.http.routers.prowlarr-rtr.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
-  traefik.http.routers.prowlarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.prowlarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker'
   traefik.http.routers.prowlarr-rtr.priority: '20'
   traefik.http.routers.prowlarr-rtr.service: 'prowlarr-rtr-svc'
   traefik.http.services.prowlarr-rtr-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
@@ -100,14 +100,14 @@ prowlarr_traefik_labels_router:
 prowlarr_traefik_labels_router_secure:
   traefik.http.routers.prowlarr-rtr-secure.entrypoints: 'https'
   traefik.http.routers.prowlarr-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
-  traefik.http.routers.prowlarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker'
+  traefik.http.routers.prowlarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker,themepark-prowlarr'
   traefik.http.routers.prowlarr-rtr-secure.priority: '20'
   traefik.http.routers.prowlarr-rtr-secure.service: 'prowlarr-rtr-secure-svc'
   traefik.http.routers.prowlarr-rtr-secure.tls.certresolver: 'dns-cloudflare'
   traefik.http.routers.prowlarr-rtr-secure.tls.options: 'tls-opts@file'
   traefik.http.services.prowlarr-rtr-secure-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
   traefik.http.routers.prowlarr-api-rtr-secure.entrypoints: 'https'
-  traefik.http.routers.prowlarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+  traefik.http.routers.prowlarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,cloudflarewarp@docker'
   traefik.http.routers.prowlarr-api-rtr-secure.priority: '30'
   traefik.http.routers.prowlarr-api-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`) && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
   traefik.http.routers.prowlarr-api-rtr-secure.service: 'prowlarr-rtr-secure-svc'
@@ -116,7 +116,7 @@ prowlarr_traefik_labels_router_secure:
 
 prowlarr_traefik_labels_themepark:
   traefik.http.middlewares.themepark-prowlarr.plugin.themepark.app: 'prowlarr'
-  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_theme }}'
+  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_theme_traefik }}'
 
 prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
                              | combine(prowlarr_traefik_labels_router)
