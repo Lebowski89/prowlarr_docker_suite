@@ -1,0 +1,131 @@
+---
+
+  ## enable or disable role features here
+  ## features still need to meet the 'is_enabled' vars conditionals in order to run
+
+################################
+# DEPENDENCIES
+################################
+
+  ## Toggle whether to install required apt packages during role run
+  ## apt packages include: python3-requests, python3-psycopg2, python3-lxml
+
+prowlarr_toggles_enable_apt_packages: true 
+
+################################
+# DOCKER
+################################
+
+  ## Toggle whether to install docker during role run
+  ## Will add dockers gpg key / repository
+  ## apt dependency packages include: ca-certificates, curl
+  ## apt docker packages include: docker-ce, docker-ce-cli, containerd.io, docker-buildx-plugin, docker-compose-plugin
+
+prowlarr_toggles_enable_docker_install: true
+
+################################
+# POSTGRES
+################################
+
+  ## Toggle whether to use Postgres as a database for prowlarr
+  ## If enabled, the role will edit prowlarr's xml config file with the required Postgres settings
+  ## The role will then ping for an existing Postgres docker container and then create one if none exists
+  ## Finally, the role will use 'community.postgresql.postgresql' modules to ping for an existing database and to create one if none exists
+
+prowlarr_toggles_enable_postgres: true
+
+  ## warning: the below toggles will delete any existing sqlite database files in the prowlarr appdir.
+  ## toggle false if you're planning to migrate db data. See: https://wiki.servarr.com/prowlarr/postgres-setup
+
+prowlarr_toggles_clean_files: true  # true will delete any existing sqlite database files in the prowlarr appdir.
+prowlarr_toggles_clean_folders: true  # true will delete sqlite backups folder in the prowlarr appdir.
+
+################################
+# METRICS
+################################
+
+  ## Toggle whether to run the metrics tasks, including the set-up of a Prometheus docker container and network (if none exists)
+  ## A seperate prometheus exporter container (ghcr.io/onedr0p/exportarr) will be created to export the metrics
+  ## The role will create a new prometheus config file is none exists or will edit an existing one
+  ## Traefik labels, Authelia middleware, and a Cloudflare DNS record will be applied to Prometheus provided the relevant toggles below are true
+
+prowlarr_toggles_enable_metrics: true
+
+################################
+# FLARESOLVERR
+################################
+
+  ## Toggles whether to deploy a Flaresolverr docker container. See: https://github.com/FlareSolverr/FlareSolverr
+  ## Helps bypass Cloudfloud protection which can prevent indexers being added to Prowlarr
+  ## Flaresolverr is in a cat and mouse game with Cloudflare - right now, Cloudflare seems to have the upper-hand
+  ## If Flaresolverr isn't bypassing Cloudflare protection, some community forks may have better luck - or not
+
+prowlarr_toggles_enable_flaresolverr: true
+
+################################
+# TRAEFIK
+################################
+
+  ## Toggle whether to reverse-proxy prowlarr behind Traefik (This role doesn't include setting up Traefik)
+  ## Includes joining prowlarr to the Traefik docker network (or creating one if it doesn't exist)
+  ## Includes defining prowlarr's Traefik http/https/http-api/https-api router labels
+  ## In this role, the cert-resolver is cloudflare (named: dns-cloudflare) with tls options defined in Traefik's config file (tls-opts@file)
+  ## Various middleware includes: globalHeaders@file,redirect-to-https@docker,robotHeaders@file,secureHeaders@file
+  ## What middleware you use will be up to your needs and how you've set them up and named them within Traefik
+  ## Additional middleware for Authelia, Cloudflare, Theme-park will be defined based on toggles/conditionals (see the toggle section for each)
+
+prowlarr_toggles_enable_traefik: true
+
+################################
+# AUTHELIA
+################################
+
+  ## Toggle whether to change prowlarr's config.xml authentication setting to 'External'
+  ## This prevents a double login when protecting prowlarr with Authelia
+
+prowlarr_toggles_enable_external_auth: true
+
+  ## Toggle whether to include Authelia middleware to prowlarr's Traefik labels
+  ## Requires setting up Authelia and defining the Authelia middleware in Traefik - this role won't do that for you
+  ## In this role, the Authelia middleware is 'authelia@docker' - change if yours differs
+  ## If enabled, the middleware will be combined with the others you've defined in the defaults variables
+
+prowlarr_toggles_enable_authelia_middleware: true
+
+################################
+# CLOUDFLARE
+################################
+
+  ## Toggle whether to use the Ansible 'community.general.cloudflare_dns' module to add a DNS record for prowlarr and Prometheus (if using metrics)
+  ## By default, this role will add a proxied 'A' record for each, with the use of a cloudflare token (Zone:Read, DNS:Edit)
+  ## It is also possible to use your global api + user email if you desire - this will require changes to the 'community.general.cloudflare_dns' tasks
+  ## See the module documentation on what is required. Personally, I prefer using a dedicated token for Traefik rather than handing over my global API
+  ## This role will remove and add your desired DNS on each run, just in case you've changed your desired sub-domain name, DNS type, or proxy settings
+
+prowlarr_toggles_enable_cloudflare_dns: true
+
+  ## Toggle whether to include the cloudflarewarp middleware to prowlarr's Traefik labels
+  ## Requires setting up and defining the cloudflarewarp plugin in Traefik - this role won't do that for you
+  ## See the plugin documentation for what it is and what it can do - https://github.com/BetterCorp/cloudflarewarp
+  ## If enabled, the middleware will be combined with the others you've defined in the defaults variables (See the vars/prowlarr.yml and vars/prometheus.yml files)
+
+prowlarr_toggles_enable_cloudflarewarp: true
+
+################################
+# THEME-PARK
+################################
+
+  ## Toggle whether to deploy a theme-park docker container to serve themes locally
+  ## This role uses a Hotio prowlarr image, so relevant binds/env settings are set up for that
+  ## If you wanted to use a Linuxserver image, you will need to make relevant changes (see Theme-park documentation)
+
+prowlarr_toggles_enable_themepark_local: true
+
+  ## Toggle whether to define Theme-Park middleware in prowlarr's Traefik labels
+  ## Requires setting up the Theme-Park plugin in Traefik
+  ## In this role, the Theme-Park middleware is named 'themepark-prowlarr' - if yours differs, change in vars/prowlarr.yml
+
+prowlarr_toggles_enable_themepark_traefik: true
+
+  ## Using both allows you to have a themed Traefik when accessing locally and via reverse-proxy, including different themes for each if desired.
+

@@ -1,20 +1,6 @@
 ---
 
 ################################
-# BASICS
-################################
-
-prowlarr_flaresolverr_is_enabled: '{{ (prowlarr_flaresolverr_env_timezone is defined) and
-                                      (prowlarr_flaresolverr_env_timezone is not none) and
-                                      (prowlarr_flaresolverr_env_timezone | trim | length > 0) and
-                                      (prowlarr_flaresolverr_env_puid is defined) and
-                                      (prowlarr_flaresolverr_env_puid is not none) and
-                                      (prowlarr_flaresolverr_env_puid | trim | length > 0) and
-                                      (prowlarr_flaresolverr_env_pgid is defined) and
-                                      (prowlarr_flaresolverr_env_pgid is not none) and
-                                      (prowlarr_flaresolverr_env_pgid | trim | length > 0) }}'
-
-################################
 # ENV
 ################################
 
@@ -30,7 +16,7 @@ prowlarr_flaresolverr_env_metrics:
 
 prowlarr_flaresolverr_docker_envs: '{{ prowlarr_flaresolverr_env_default
                                        | combine((prowlarr_flaresolverr_env_metrics
-                                                  if prowlarr_prometheus_is_enabled
+                                                  if prowlarr_toggles_enable_metrics
                                                   else [])) }}'
 
 ################################
@@ -44,5 +30,5 @@ prowlarr_flaresolverr_network_prometheus_bind:
 
 prowlarr_flaresolverr_docker_networks: '{{ prowlarr_flaresolverr_network_default_bind
                                            + (prowlarr_flaresolverr_network_prometheus_bind
-                                              if prowlarr_prometheus_is_enabled
+                                              if prowlarr_toggles_enable_metrics
                                               else []) }}'

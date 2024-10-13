@@ -23,13 +23,13 @@ prowlarr_network_prometheus_bind:
 
 prowlarr_docker_networks: '{{ prowlarr_network_default_bind
                               + (prowlarr_network_postgres_bind
-                                 if prowlarr_postgres_is_enabled
+                                 if prowlarr_toggles_enable_postgres
                                  else [])
                               + (prowlarr_network_traefik_bind
-                                 if prowlarr_traefik_is_enabled
+                                 if prowlarr_toggles_enable_traefik
                                  else [])
                               + (prowlarr_network_prometheus_bind
-                                 if prowlarr_prometheus_is_enabled
+                                 if prowlarr_toggles_enable_metrics
                                  else []) }}'
 
 prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend_driver is defined) and
@@ -52,12 +52,12 @@ prowlarr_env_themepark_local:
   TP_SCHEME: 'http'
   TP_DOMAIN: '{{ prowlarr_themepark_domain_local }}'
   TP_HOTIO: 'true'
-  TP_THEME: '{{ prowlarr_theme_local }}'
+  TP_THEME: '{{ prowlarr_themepark_domain_local_theme }}'
 
 prowlarr_docker_envs: '{{ prowlarr_env_default
-                          | combine((prowlarr_env_themepark_local
-                                     if prowlarr_themepark_local_is_enabled
-                                     else [])) }}'
+                        | combine((prowlarr_env_themepark_local
+                                   if prowlarr_toggles_enable_themepark_local
+                                   else [])) }}'
 
 ################################
 # BINDS
@@ -65,16 +65,16 @@ prowlarr_docker_envs: '{{ prowlarr_env_default
 
 prowlarr_docker_volumes: '{{ prowlarr_volumes_binds_default
                              + (prowlarr_volumes_binds_themepark
-                                if prowlarr_themepark_local_is_enabled
+                                if prowlarr_toggles_enable_themepark_local
                                 else []) }}'
 
 ################################
 # AUTHELIA
 ################################
 
-prowlarr_authelia_is_enabled: '{{ (prowlarr_authelia_name is defined) and
-                                  (prowlarr_authelia_name is not none) and
-                                  (prowlarr_authelia_name | trim | length > 0) }}'
+prowlarr_authelia_is_enabled: '{{ (prowlarr_traefik_authelia_container_name is defined) and
+                                  (prowlarr_traefik_authelia_container_name is not none) and
+                                  (prowlarr_traefik_authelia_container_name | trim | length > 0) }}'
 
 ################################
 # TRAEFIK
@@ -85,43 +85,49 @@ prowlarr_traefik_labels_default:
   traefik.docker.network: '{{ prowlarr_traefik_network }}'
 
 prowlarr_traefik_labels_router:
+  ## http
   traefik.http.routers.prowlarr-rtr.entrypoints: 'http'
-  traefik.http.routers.prowlarr-rtr.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
-  traefik.http.routers.prowlarr-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker'
-  traefik.http.routers.prowlarr-rtr.priority: '20'
+  traefik.http.routers.prowlarr-rtr.rule: '{{ prowlarr_traefik_http_rule }}'
+  traefik.http.routers.prowlarr-rtr.middlewares: '{{ prowlarr_traefik_http_middlewares_bind }}'
+  traefik.http.routers.prowlarr-rtr.priority: '{{ prowlarr_traefik_http_priority }}'
   traefik.http.routers.prowlarr-rtr.service: 'prowlarr-rtr-svc'
   traefik.http.services.prowlarr-rtr-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
+  ## http-api
   traefik.http.routers.prowlarr-api-rtr.entrypoints: 'http'
-  traefik.http.routers.prowlarr-api-rtr.middlewares: 'globalHeaders@file,robotHeaders@file'
-  traefik.http.routers.prowlarr-api-rtr.priority: '30'
-  traefik.http.routers.prowlarr-api-rtr.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`) && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+  traefik.http.routers.prowlarr-api-rtr.rule: '{{ prowlarr_traefik_http_api_rule }}'
+  traefik.http.routers.prowlarr-api-rtr.middlewares: '{{ prowlarr_traefik_http_api_middlewares_bind }}'
+  traefik.http.routers.prowlarr-api-rtr.priority: '{{ prowlarr_traefik_http_api_priority }}'
   traefik.http.routers.prowlarr-api-rtr.service: 'prowlarr-rtr-svc'
 
 prowlarr_traefik_labels_router_secure:
+  ## https
   traefik.http.routers.prowlarr-rtr-secure.entrypoints: 'https'
-  traefik.http.routers.prowlarr-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
-  traefik.http.routers.prowlarr-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker,cloudflarewarp@docker,themepark-prowlarr'
-  traefik.http.routers.prowlarr-rtr-secure.priority: '20'
+  traefik.http.routers.prowlarr-rtr-secure.rule: '{{ prowlarr_traefik_https_rule }}'
+  traefik.http.routers.prowlarr-rtr-secure.middlewares: '{{ prowlarr_traefik_https_middlewares_bind }}'
+  traefik.http.routers.prowlarr-rtr-secure.priority: '{{ prowlarr_traefik_https_priority }}'
   traefik.http.routers.prowlarr-rtr-secure.service: 'prowlarr-rtr-secure-svc'
-  traefik.http.routers.prowlarr-rtr-secure.tls.certresolver: 'dns-cloudflare'
-  traefik.http.routers.prowlarr-rtr-secure.tls.options: 'tls-opts@file'
+  traefik.http.routers.prowlarr-rtr-secure.tls.certresolver: '{{ prowlarr_traefik_tls_certresolver }}'
+  traefik.http.routers.prowlarr-rtr-secure.tls.options: '{{ prowlarr_traefik_tls_options }}'
   traefik.http.services.prowlarr-rtr-secure-svc.loadbalancer.server.port: '{{ prowlarr_traefik_port }}'
+  ## https-api
   traefik.http.routers.prowlarr-api-rtr-secure.entrypoints: 'https'
-  traefik.http.routers.prowlarr-api-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,cloudflarewarp@docker'
-  traefik.http.routers.prowlarr-api-rtr-secure.priority: '30'
-  traefik.http.routers.prowlarr-api-rtr-secure.rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`) && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))'
+  traefik.http.routers.prowlarr-api-rtr-secure.rule: '{{ prowlarr_traefik_https_api_rule }}'
+  traefik.http.routers.prowlarr-api-rtr-secure.middlewares: '{{ prowlarr_traefik_https_api_middlewares_bind }}'
+  traefik.http.routers.prowlarr-api-rtr-secure.priority: '{{ prowlarr_traefik_https_api_priority }}'
   traefik.http.routers.prowlarr-api-rtr-secure.service: 'prowlarr-rtr-secure-svc'
-  traefik.http.routers.prowlarr-api-rtr-secure.tls.certresolver: 'dns-cloudflare'
-  traefik.http.routers.prowlarr-api-rtr-secure.tls.options: 'tls-opts@file'
-
+  traefik.http.routers.prowlarr-api-rtr-secure.tls.certresolver: '{{ prowlarr_traefik_tls_certresolver }}'
+  traefik.http.routers.prowlarr-api-rtr-secure.tls.options: '{{ prowlarr_traefik_tls_options }}'
+  ## theme-park
 prowlarr_traefik_labels_themepark:
   traefik.http.middlewares.themepark-prowlarr.plugin.themepark.app: 'prowlarr'
-  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_theme_traefik }}'
+  traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_traefik_themepark_theme }}'
 
 prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
                              | combine(prowlarr_traefik_labels_router)
                              | combine(prowlarr_traefik_labels_router_secure)
-                             | combine(prowlarr_traefik_labels_themepark) }}'
+                             | combine((prowlarr_traefik_labels_themepark
+                                        if prowlarr_toggles_enable_themepark_traefik
+                                        else [])) }}'
 
 prowlarr_traefik_is_enabled: '{{ (prowlarr_traefik_domain is defined) and
                                  (prowlarr_traefik_domain is not none) and
@@ -134,6 +140,35 @@ prowlarr_traefik_network_is_enabled: '{{ (prowlarr_traefik_network_driver is def
                                          (prowlarr_traefik_network_subnet is not none) and
                                          (prowlarr_traefik_network_subnet | trim | length > 0) }}'
 
+prowlarr_traefik_http_middlewares_bind: '{{ prowlarr_traefik_http_middlewares
+                                            + (",cloudflarewarp@docker"
+                                               if (prowlarr_toggles_enable_cloudflarewarp)
+                                               else "")
+                                            + (",authelia@docker"
+                                               if (prowlarr_toggles_enable_authelia_middleware)
+                                               else "") }}'
+
+prowlarr_traefik_http_api_middlewares_bind: '{{ prowlarr_traefik_http_api_middlewares
+                                              + (",cloudflarewarp@docker"
+                                                 if (prowlarr_toggles_enable_cloudflarewarp)
+                                                 else "") }}'
+
+prowlarr_traefik_https_middlewares_bind: '{{ prowlarr_traefik_https_middlewares
+                                             + (",cloudflarewarp@docker"
+                                                if (prowlarr_toggles_enable_cloudflarewarp)
+                                                else "")
+                                             + (",authelia@docker"
+                                                if (prowlarr_toggles_enable_authelia_middleware)
+                                                else "") 
+                                             + (",themepark-prowlarr"
+                                                if (prowlarr_toggles_enable_themepark_traefik)
+                                                else "") }}'
+
+prowlarr_traefik_https_api_middlewares_bind: '{{ prowlarr_traefik_https_api_middlewares
+                                                 + (",cloudflarewarp@docker"
+                                                    if (prowlarr_toggles_enable_cloudflarewarp)
+                                                    else "") }}'
+
 ################################
 # CLOUDFLARE
 ################################
@@ -144,20 +179,3 @@ prowlarr_cloudflare_zone: '{{ prowlarr_traefik_domain }}'
 prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_api_token is defined) and
                                     (prowlarr_cloudflare_api_token is not none) and
                                     (prowlarr_cloudflare_api_token | trim | length > 0) }}'
-
-################################
-# THEME
-################################
-
-prowlarr_themepark_local_is_enabled: '{{ (prowlarr_themepark_env_timezone is defined) and
-                                         (prowlarr_themepark_env_timezone is not none) and
-                                         (prowlarr_themepark_env_timezone | trim | length > 0) and
-                                         (prowlarr_themepark_env_puid is defined) and
-                                         (prowlarr_themepark_env_puid is not none) and
-                                         (prowlarr_themepark_env_puid | trim | length > 0) and
-                                         (prowlarr_themepark_env_pgid is defined) and
-                                         (prowlarr_themepark_env_pgid is not none) and
-                                         (prowlarr_themepark_env_pgid | trim | length > 0) and
-                                         (prowlarr_themepark_domain_local is defined) and
-                                         (prowlarr_themepark_domain_local is not none) and
-                                         (prowlarr_themepark_domain_local | trim | length > 0) }}'

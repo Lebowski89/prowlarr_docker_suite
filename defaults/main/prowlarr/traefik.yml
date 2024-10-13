@@ -1,0 +1,72 @@
+---
+
+################################
+# DOMAIN
+################################
+
+prowlarr_traefik_subdomain:
+prowlarr_traefik_domain:
+prowlarr_traefik_port: '9696'
+
+################################
+# NETWORK
+################################
+
+prowlarr_traefik_network: 'traefik_proxy'
+prowlarr_traefik_network_driver: 'bridge'  ## only required if network doesn't exist
+prowlarr_traefik_network_subnet: ''  ## only required if network doesn't exist
+
+################################
+# TLS
+################################
+
+prowlarr_traefik_tls_certresolver: 'dns-cloudflare'
+prowlarr_traefik_tls_options: 'tls-opts@file'
+
+################################
+# ROUTER (HTTP)
+################################
+
+  ## http
+prowlarr_traefik_http_middlewares: 'globalHeaders@file,redirect-to-https@docker,robotHeaders@file'
+prowlarr_traefik_http_rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
+prowlarr_traefik_http_priority: '20'
+
+  ## http-api
+prowlarr_traefik_http_api_middlewares: 'globalHeaders@file,redirect-to-https@docker,robotHeaders@file'
+prowlarr_traefik_http_api_rule: '{{ prowlarr_traefik_http_rule }} && (PathRegexp(`/[0-9]+/api`) || PathRegexp(`/[0-9]+/download`) || PathPrefix(`/api`) || PathPrefix(`/ping`))'
+prowlarr_traefik_http_api_priority: '30'
+
+
+################################
+# ROUTER (HTTPS)
+################################
+
+  ## https
+prowlarr_traefik_https_middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+prowlarr_traefik_https_rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_traefik_domain }}`)'
+prowlarr_traefik_https_priority: '20'
+
+  ## https-api
+prowlarr_traefik_https_api_middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+prowlarr_traefik_https_api_rule: '{{ prowlarr_traefik_https_rule }} && (PathRegexp(`/[0-9]+/api`) || PathRegexp(`/[0-9]+/download`) || PathPrefix(`/api`) || PathPrefix(`/ping`))'
+prowlarr_traefik_https_api_priority: '30'
+
+################################
+# AUTHELIA
+################################
+
+prowlarr_traefik_authelia_container_name: 'authelia'
+prowlarr_traefik_authelia_middleware: 'authelia@docker'
+
+################################
+# CLOUDFLARE
+################################
+
+prowlarr_traefik_cloudflare_middleware: 'cloudflarewarp@docker'
+
+################################
+# THEME-PARK
+################################
+
+prowlarr_traefik_themepark_theme: 'hotpink'

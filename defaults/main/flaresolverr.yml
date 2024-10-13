@@ -16,9 +16,9 @@ prowlarr_flaresolverr_basics_restart_policy: 'unless-stopped'
 # ENV
 ################################
 
-prowlarr_flaresolverr_env_timezone: ''
-prowlarr_flaresolverr_env_puid: ''
-prowlarr_flaresolverr_env_pgid: ''
+prowlarr_flaresolverr_env_timezone: 'Etc/UTC'
+prowlarr_flaresolverr_env_puid: '1000'
+prowlarr_flaresolverr_env_pgid: '1000'
 
 ################################
 # PORTS

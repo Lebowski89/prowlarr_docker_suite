@@ -13,19 +13,18 @@ prowlarr_themepark_basics_restart_policy: 'unless-stopped'
 # ENV
 ################################
 
-prowlarr_themepark_env_timezone: ''
-prowlarr_themepark_env_puid: ''
-prowlarr_themepark_env_pgid: ''
+prowlarr_themepark_env_timezone: 'Etc/UTC'
+prowlarr_themepark_env_puid: '1000'
+prowlarr_themepark_env_pgid: '1000'
 
 ################################
 # DOMAIN (LOCAL)
 ################################
 
-  ## Fill if wanting themes served locally via http on local network.
-  ## Will deploy theme-park in a docker container.
   ## Must be accessible to your browser - try: '<local_machine_ip>:{{ prowlarr_themepark_ports_host }}'
 
 prowlarr_themepark_domain_local: ''
+prowlarr_themepark_domain_local_theme: 'hotline'  ## theme to use for local theme-park deployment
 
 ################################
 # PORTS

@@ -1,20 +1,6 @@
 ---
 
 ################################
-# BASICS
-################################
-
-prowlarr_prometheus_is_enabled: '{{ (prowlarr_prometheus_env_timezone is defined) and
-                                    (prowlarr_prometheus_env_timezone is not none) and
-                                    (prowlarr_prometheus_env_timezone | trim | length > 0) and
-                                    (prowlarr_prometheus_env_puid is defined) and
-                                    (prowlarr_prometheus_env_puid is not none) and
-                                    (prowlarr_prometheus_env_puid | trim | length > 0) and
-                                    (prowlarr_prometheus_env_pgid is defined) and
-                                    (prowlarr_prometheus_env_pgid is not none) and
-                                    (prowlarr_prometheus_env_pgid | trim | length > 0) }}'
-
-################################
 # COMMANDS
 ################################
 
@@ -28,13 +14,6 @@ prowlarr_prometheus_commands:
 # NETWORK
 ################################
 
-prowlarr_prometheus_network_is_enabled: '{{ (prowlarr_prometheus_network_driver is defined) and
-                                            (prowlarr_prometheus_network_driver is not none) and
-                                            (prowlarr_prometheus_network_driver | trim | length > 0) and
-                                            (prowlarr_prometheus_network_subnet is defined) and
-                                            (prowlarr_prometheus_network_subnet is not none) and
-                                            (prowlarr_prometheus_network_subnet | trim | length > 0) }}'
-
 prowlarr_prometheus_network_default_bind:
   - name: '{{ prowlarr_network_backend }}'
 prowlarr_prometheus_network_traefik_bind:
@@ -44,11 +23,16 @@ prowlarr_prometheus_network_bind:
 
 prowlarr_prometheus_docker_networks: '{{ prowlarr_prometheus_network_default_bind
                                          + (prowlarr_prometheus_network_traefik_bind
-                                            if prowlarr_prometheus_traefik_is_enabled
+                                            if prowlarr_toggles_enable_traefik
                                             else [])
-                                         + (prowlarr_prometheus_network_bind
-                                            if prowlarr_prometheus_is_enabled
-                                            else []) }}'
+                                         + prowlarr_prometheus_network_bind }}'
+
+prowlarr_prometheus_network_is_enabled: '{{ (prowlarr_prometheus_network_driver is defined) and
+                                            (prowlarr_prometheus_network_driver is not none) and
+                                            (prowlarr_prometheus_network_driver | trim | length > 0) and
+                                            (prowlarr_prometheus_network_subnet is defined) and
+                                            (prowlarr_prometheus_network_subnet is not none) and
+                                            (prowlarr_prometheus_network_subnet | trim | length > 0) }}'
 
 ################################
 # BINDS
@@ -61,26 +45,26 @@ prowlarr_prometheus_volumes_binds: '{{ prowlarr_prometheus_binds_config_mapping
 # TRAEFIK
 ################################
 
-prowlarr_prometheus_traefik_labels_default:
+prowlarr_promtheus_traefik_labels_default:
   traefik.enable: 'true'
   traefik.docker.network: '{{ prowlarr_prometheus_traefik_network }}'
 
-prowlarr_prometheus_traefik_labels_router:
+prowlarr_promtheus_traefik_labels_router:
   traefik.http.routers.prometheus-rtr.entrypoints: 'http'
-  traefik.http.routers.prometheus-rtr.rule: 'Host(`{{ prowlarr_prometheus_traefik_subdomain }}.{{ prowlarr_prometheus_traefik_domain }}`)'
-  traefik.http.routers.prometheus-rtr.middlewares: 'globalHeaders@file,robotHeaders@file,authelia@docker'
-  traefik.http.routers.prometheus-rtr.priority: '20'
+  traefik.http.routers.prometheus-rtr.rule: '{{ prowlarr_prometheus_traefik_http_rule }}'
+  traefik.http.routers.prometheus-rtr.middlewares: '{{ prowlarr_prometheus_traefik_http_middlewares_bind }}'
+  traefik.http.routers.prometheus-rtr.priority: '{{ prowlarr_prometheus_traefik_http_priority }}'
   traefik.http.routers.prometheus-rtr.service: 'prometheus-rtr-svc'
   traefik.http.services.prometheus-rtr-svc.loadbalancer.server.port: '{{ prowlarr_prometheus_traefik_port }}'
 
-prowlarr_prometheus_traefik_labels_router_secure:
+prowlarr_promtheus_traefik_labels_router_secure:
   traefik.http.routers.prometheus-rtr-secure.entrypoints: 'https'
-  traefik.http.routers.prometheus-rtr-secure.rule: 'Host(`{{ prowlarr_prometheus_traefik_subdomain }}.{{ prowlarr_prometheus_traefik_domain }}`)'
-  traefik.http.routers.prometheus-rtr-secure.middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file,authelia@docker'
-  traefik.http.routers.prometheus-rtr-secure.priority: '20'
+  traefik.http.routers.prometheus-rtr-secure.rule: '{{ prowlarr_prometheus_traefik_https_rule }}'
+  traefik.http.routers.prometheus-rtr-secure.middlewares: '{{ prowlarr_prometheus_traefik_https_middlewares_bind }}'
+  traefik.http.routers.prometheus-rtr-secure.priority: '{{ prowlarr_prometheus_traefik_https_priority }}'
   traefik.http.routers.prometheus-rtr-secure.service: 'prometheus-rtr-secure-svc'
-  traefik.http.routers.prometheus-rtr-secure.tls.certresolver: 'dns-cloudflare'
-  traefik.http.routers.prometheus-rtr-secure.tls.options: 'tls-opts@file'
+  traefik.http.routers.prometheus-rtr-secure.tls.certresolver: '{{ prowlarr_prometheus_traefik_tls_certresolver }}'
+  traefik.http.routers.prometheus-rtr-secure.tls.options: '{{ prowlarr_prometheus_traefik_tls_options }}'
   traefik.http.services.prometheus-rtr-secure-svc.loadbalancer.server.port: '{{ prowlarr_prometheus_traefik_port }}'
 
 prowlarr_prometheus_traefik_labels: '{{ prowlarr_prometheus_traefik_labels_default
@@ -90,6 +74,22 @@ prowlarr_prometheus_traefik_labels: '{{ prowlarr_prometheus_traefik_labels_defau
 prowlarr_prometheus_traefik_is_enabled: '{{ (prowlarr_prometheus_traefik_domain is defined) and
                                             (prowlarr_prometheus_traefik_domain is not none) and
                                             (prowlarr_prometheus_traefik_domain | trim | length > 0) }}'
+
+prowlarr_prometheus_traefik_http_middlewares_bind: '{{ prowlarr_prometheus_traefik_http_middlewares
+                                                       + (",cloudflarewarp@docker"
+                                                          if (prowlarr_toggles_enable_cloudflarewarp)
+                                                          else "")
+                                                       + (",authelia@docker"
+                                                          if (prowlarr_toggles_enable_authelia_middleware)
+                                                          else "") }}'
+
+prowlarr_prometheus_traefik_https_middlewares_bind: '{{ prowlarr_prometheus_traefik_https_middlewares
+                                                        + (",cloudflarewarp@docker"
+                                                           if (prowlarr_toggles_enable_cloudflarewarp)
+                                                           else "")
+                                                        + (",authelia@docker"
+                                                           if (prowlarr_toggles_enable_authelia_middleware)
+                                                           else "") }}'
 
 ################################
 # CLOUDFLARE
@@ -112,16 +112,4 @@ prowlarr_prometheus_exporter_network_bind:
   - name: '{{ prowlarr_prometheus_network }}'
 
 prowlarr_prometheus_exporter_networks: '{{ prowlarr_prometheus_exporter_network_default_bind
-                                           + (prowlarr_prometheus_exporter_network_bind
-                                              if prowlarr_prometheus_is_enabled
-                                              else []) }}'
-
-prowlarr_prometheus_exporter_is_enabled: '{{ (prowlarr_prometheus_exporter_env_timezone is defined) and
-                                             (prowlarr_prometheus_exporter_env_timezone is not none) and
-                                             (prowlarr_prometheus_exporter_env_timezone | trim | length > 0) and
-                                             (prowlarr_prometheus_exporter_env_puid is defined) and
-                                             (prowlarr_prometheus_exporter_env_puid is not none) and
-                                             (prowlarr_prometheus_exporter_env_puid | trim | length > 0) and
-                                             (prowlarr_prometheus_exporter_env_pgid is defined) and
-                                             (prowlarr_prometheus_exporter_env_pgid is not none) and
-                                             (prowlarr_prometheus_exporter_env_pgid | trim | length > 0) }}'
+                                           + prowlarr_prometheus_exporter_network_bind }}'

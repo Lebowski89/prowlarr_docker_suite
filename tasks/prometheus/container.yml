@@ -59,7 +59,28 @@
   register: prowlarr_prometheus_container_result
 
 - name: Create prometheus container
-  when: not prowlarr_prometheus_container_result.exists
+  when: 
+    - not prowlarr_prometheus_container_result.exists
+    - (not prowlarr_toggles_enable_traefik) or (not prowlarr_prometheus_traefik_is_enabled)
+  community.docker.docker_container:
+    name: '{{ prowlarr_prometheus_basics_name }}'
+    image: '{{ prowlarr_prometheus_basics_image_repo }}:{{ prowlarr_prometheus_basics_image_tag }}'
+    networks: '{{ prowlarr_prometheus_docker_networks }}'
+    command: '{{ prowlarr_prometheus_commands | reject("equalto", omit) | list }}'
+    env:
+      PUID: '{{ prowlarr_prometheus_env_puid }}'
+      PGID: '{{ prowlarr_prometheus_env_pgid }}'
+      TZ: '{{ prowlarr_prometheus_env_timezone }}'
+    ports:
+      - '{{ prowlarr_prometheus_ports_host }}:{{ prowlarr_prometheus_ports_cont }}'
+    volumes: '{{ prowlarr_prometheus_volumes_binds }}'
+    restart_policy: '{{ prowlarr_prometheus_basics_restart_policy }}'
+
+- name: Create prometheus traefik container
+  when: 
+    - not prowlarr_prometheus_container_result.exists
+    - prowlarr_toggles_enable_traefik
+    - prowlarr_prometheus_traefik_is_enabled
   community.docker.docker_container:
     name: '{{ prowlarr_prometheus_basics_name }}'
     image: '{{ prowlarr_prometheus_basics_image_repo }}:{{ prowlarr_prometheus_basics_image_tag }}'

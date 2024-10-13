@@ -103,7 +103,7 @@
 - name: Clean prowlarr appdir
   block:
     - name: Remove sqlite database files
-      when: prowlarr_postgres_clean_files
+      when: prowlarr_toggles_clean_files
       ansible.builtin.file:
         path: '{{ prowlarr_paths_location }}/{{ item }}'
         state: absent
@@ -116,7 +116,7 @@
         - prowlarr.db-wal
 
     - name: Remove sqlite backups folder
-      when: prowlarr_postgres_clean_folders
+      when: prowlarr_toggles_clean_folders
       ansible.builtin.file:
         path: '{{ prowlarr_paths_location }}/Backups'
         state: absent

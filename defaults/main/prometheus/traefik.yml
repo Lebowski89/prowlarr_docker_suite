@@ -1,0 +1,50 @@
+---
+
+################################
+# DOMAIN
+################################
+
+prowlarr_prometheus_traefik_subdomain: '{{ prowlarr_prometheus_basics_name }}'
+prowlarr_prometheus_traefik_domain: ''
+prowlarr_prometheus_traefik_port: '9090'
+
+################################
+# NETWORK
+################################
+
+prowlarr_prometheus_traefik_network: 'traefik_proxy'
+
+################################
+# TLS
+################################
+
+prowlarr_prometheus_traefik_tls_certresolver: 'dns-cloudflare'
+prowlarr_prometheus_traefik_tls_options: 'tls-opts@file'
+
+################################
+# ROUTER (HTTP)
+################################
+
+prowlarr_prometheus_traefik_http_middlewares: 'globalHeaders@file,redirect-to-https@docker,robotHeaders@file'
+prowlarr_prometheus_traefik_http_rule: 'Host(`{{ prowlarr_prometheus_traefik_subdomain }}.{{ prowlarr_prometheus_traefik_domain }}`)'
+prowlarr_prometheus_traefik_http_priority: '20'
+
+################################
+# ROUTER (HTTPS)
+################################
+
+prowlarr_prometheus_traefik_https_middlewares: 'globalHeaders@file,secureHeaders@file,robotHeaders@file'
+prowlarr_prometheus_traefik_https_rule: 'Host(`{{ prowlarr_prometheus_traefik_subdomain }}.{{ prowlarr_prometheus_traefik_domain }}`)'
+prowlarr_prometheus_traefik_https_priority: '20'
+
+################################
+# AUTHELIA
+################################
+
+prowlarr_prometheus_traefik_authelia_middleware: 'authelia@docker'
+
+################################
+# CLOUDFLARE
+################################
+
+prowlarr_prometheus_traefik_cloudflare_middleware: 'cloudflarewarp@docker'
