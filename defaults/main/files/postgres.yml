@@ -39,8 +39,7 @@ prowlarr_postgres_ports_cont: '5432'
 
 prowlarr_postgres_paths_folder: '{{ prowlarr_postgres_basics_name }}'  # name of postgres folder
 prowlarr_postgres_paths_location: '/opt/{{ prowlarr_postgres_paths_folder }}' # path of postgres folder
-prowlarr_postgres_paths_keys_folder: 'keys'
-prowlarr_postgres_paths_keys_location: '{{ prowlarr_postgres_paths_location }}/{{ prowlarr_postgres_paths_keys_folder }}'
+prowlarr_postgres_paths_keys_location: '{{ prowlarr_postgres_paths_location }}/keys'
 
 ################################
 # BINDS
@@ -66,3 +65,7 @@ prowlarr_postgres_auth_password_file: 'postgres_key.txt'  ## will be created by 
 
 prowlarr_postgres_database_main: 'prowlarr-main'
 prowlarr_postgres_database_log: 'prowlarr-log'
+
+
+
+

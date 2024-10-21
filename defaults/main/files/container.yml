@@ -1,0 +1,104 @@
+---
+
+################################
+# API
+################################
+
+prowlarr_api_key: ''
+
+################################
+# BASICS
+################################
+
+  ## prowlarr
+prowlarr_basics_name: 'prowlarr'
+prowlarr_basics_image_repo: 'ghcr.io/hotio/prowlarr'
+prowlarr_basics_image_tag: 'nightly'
+prowlarr_basics_restart_policy: 'unless-stopped'
+
+  ## prometheus
+prowlarr_prometheus_basics_name: 'prometheus'
+prowlarr_prometheus_basics_image_repo: 'prom/prometheus'
+prowlarr_prometheus_basics_image_tag: 'main'
+prowlarr_prometheus_basics_restart_policy: 'unless-stopped'
+
+################################
+# NETWORK
+################################
+
+  ## backend
+prowlarr_network_backend: 'proxy'  ## allows backend docker communication between prowlarr and companion apps
+prowlarr_network_backend_driver: 'bridge'  ## only required if network doesn't exist
+prowlarr_network_backend_subnet: ''  ## only required if network doesn't exist
+
+  ## prometheus
+prowlarr_prometheus_network: 'prometheus'
+prowlarr_prometheus_network_driver: 'bridge'
+prowlarr_prometheus_network_subnet: ''
+
+################################
+# ENV
+################################
+
+  ## prowlarr
+prowlarr_env_timezone: 'Etc/UTC'
+prowlarr_env_puid: '1000'
+prowlarr_env_pgid: '1000'
+
+  ## promtheus
+prowlarr_prometheus_env_timezone: '{{ prowlarr_env_timezone }}'
+prowlarr_prometheus_env_puid: '{{ prowlarr_env_puid }}'
+prowlarr_prometheus_env_pgid: '{{ prowlarr_env_pgid }}'
+
+################################
+# PORTS
+################################
+
+  ## prowlarr
+prowlarr_ports_host: '9696'
+prowlarr_ports_cont: '9696'
+
+  ## prometheus
+prowlarr_prometheus_ports_host: '9090'
+prowlarr_prometheus_ports_cont: '9090'
+
+################################
+# PATHS
+################################
+
+  ## prowlarr
+prowlarr_paths_folder: '{{ prowlarr_basics_name }}'
+prowlarr_paths_location: '/opt/{{ prowlarr_paths_folder }}'
+
+  ## prometheus
+prowlarr_prometheus_paths_folder: '{{ prowlarr_prometheus_basics_name }}'  # name of prometheus config folder
+prowlarr_prometheus_paths_location: '/opt/{{ prowlarr_prometheus_paths_folder }}'  # path of prometheus config folder
+prowlarr_prometheus_paths_data_location: '{{ prowlarr_prometheus_paths_location }}/data'  # path where prometheus metrics are stored
+
+################################
+# BINDS
+################################
+
+  ## prowlarr
+prowlarr_volumes_binds_default:
+  - /etc/localtime:/etc/localtime:ro
+  - '{{ prowlarr_paths_location }}:/config'
+
+prowlarr_volumes_binds_themepark:  ## only binds if local themepark is deployed
+  - '{{ prowlarr_themepark_paths_location }}/docker-mods/98-themepark-prowlarr:/etc/cont-init.d/98-themepark'
+
+  ## prometheus
+prowlarr_prometheus_binds_config_mapping:
+  - '{{ prowlarr_prometheus_paths_location }}/prometheus.yml:/etc/prometheus/prometheus.yml'
+
+prowlarr_prometheus_binds_data_mapping:
+  - '{{ prowlarr_prometheus_paths_data_location }}:/data'
+
+
+################################
+# METRICS
+################################
+
+  ## prometheus
+prowlarr_prometheus_metrics_retention_time: '15d'
+prowlarr_prometheus_metrics_retention_size: '0'  ## 0 for disabled. Use size units, i.e, 500MB, 2GB, 1TB, etc.

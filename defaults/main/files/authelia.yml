@@ -1,0 +1,7 @@
+---
+
+################################
+# AUTHELIA
+################################
+
+prowlarr_authelia_container_name: 'authelia'

@@ -46,5 +46,3 @@ prowlarr_themepark_paths_location: '/opt/{{ prowlarr_themepark_paths_folder }}'
 
 prowlarr_themepark_bind_mount:
   - '{{ prowlarr_themepark_paths_location }}:/config'
-
-

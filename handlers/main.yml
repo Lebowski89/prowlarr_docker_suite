@@ -3,8 +3,10 @@
 - name: Restart prometheus container
   community.docker.docker_container:
     container_default_behavior: compatibility
-    name: '{{ prowlarr_prometheus_basics_name }}'
+    name: '{{ lookup("vars", role_prefix + "_prometheus_basics_name") }}'
     state: started
+    comparisons:
+      '*': ignore
     restart: true
     stop_timeout: 10
   register: restart_prowlarr_prometheus_docker

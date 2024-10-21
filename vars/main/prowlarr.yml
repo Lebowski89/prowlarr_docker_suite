@@ -21,16 +21,16 @@ prowlarr_network_traefik_bind:
 prowlarr_network_prometheus_bind:
   - name: '{{ prowlarr_prometheus_network }}'
 
-prowlarr_docker_networks: '{{ prowlarr_network_default_bind
-                              + (prowlarr_network_postgres_bind
-                                 if prowlarr_toggles_enable_postgres
-                                 else [])
-                              + (prowlarr_network_traefik_bind
-                                 if prowlarr_toggles_enable_traefik
-                                 else [])
-                              + (prowlarr_network_prometheus_bind
-                                 if prowlarr_toggles_enable_metrics
-                                 else []) }}'
+prowlarr_networks: '{{ prowlarr_network_default_bind
+                       + (prowlarr_network_postgres_bind
+                          if prowlarr_toggles_enable_postgres
+                          else [])
+                       + (prowlarr_network_traefik_bind
+                          if prowlarr_toggles_enable_traefik
+                          else [])
+                       + (prowlarr_network_prometheus_bind
+                          if prowlarr_toggles_enable_metrics
+                          else []) }}'
 
 prowlarr_network_backend_is_enabled: '{{ (prowlarr_network_backend_driver is defined) and
                                          (prowlarr_network_backend_driver is not none) and
@@ -54,27 +54,38 @@ prowlarr_env_themepark_local:
   TP_HOTIO: 'true'
   TP_THEME: '{{ prowlarr_themepark_domain_local_theme }}'
 
-prowlarr_docker_envs: '{{ prowlarr_env_default
-                        | combine((prowlarr_env_themepark_local
-                                   if prowlarr_toggles_enable_themepark_local
-                                   else [])) }}'
+prowlarr_envs: '{{ prowlarr_env_default
+                   | combine((prowlarr_env_themepark_local
+                              if prowlarr_toggles_enable_themepark_local
+                              else [])) }}'
+              
+################################
+# LABELS
+################################
+
+prowlarr_labels: '{{ prowlarr_traefik_labels_default
+                     | combine(prowlarr_traefik_labels_router)
+                     | combine(prowlarr_traefik_labels_router_secure)
+                     | combine((prowlarr_traefik_labels_themepark
+                                if prowlarr_toggles_enable_themepark_traefik
+                                else [])) }}'
 
 ################################
 # BINDS
 ################################
 
-prowlarr_docker_volumes: '{{ prowlarr_volumes_binds_default
-                             + (prowlarr_volumes_binds_themepark
-                                if prowlarr_toggles_enable_themepark_local
-                                else []) }}'
+prowlarr_volumes: '{{ prowlarr_volumes_binds_default
+                      + (prowlarr_volumes_binds_themepark
+                         if prowlarr_toggles_enable_themepark_local
+                         else []) }}'
 
 ################################
 # AUTHELIA
 ################################
 
-prowlarr_authelia_is_enabled: '{{ (prowlarr_traefik_authelia_container_name is defined) and
-                                  (prowlarr_traefik_authelia_container_name is not none) and
-                                  (prowlarr_traefik_authelia_container_name | trim | length > 0) }}'
+prowlarr_authelia_is_enabled: '{{ (prowlarr_authelia_container_name is defined) and
+                                  (prowlarr_authelia_container_name is not none) and
+                                  (prowlarr_authelia_container_name | trim | length > 0) }}'
 
 ################################
 # TRAEFIK
@@ -122,13 +133,6 @@ prowlarr_traefik_labels_themepark:
   traefik.http.middlewares.themepark-prowlarr.plugin.themepark.app: 'prowlarr'
   traefik.http.middlewares.themepark-prowlarr.plugin.themepark.theme: '{{ prowlarr_traefik_themepark_theme }}'
 
-prowlarr_traefik_labels: '{{ prowlarr_traefik_labels_default
-                             | combine(prowlarr_traefik_labels_router)
-                             | combine(prowlarr_traefik_labels_router_secure)
-                             | combine((prowlarr_traefik_labels_themepark
-                                        if prowlarr_toggles_enable_themepark_traefik
-                                        else [])) }}'
-
 prowlarr_traefik_is_enabled: '{{ (prowlarr_traefik_domain is defined) and
                                  (prowlarr_traefik_domain is not none) and
                                  (prowlarr_traefik_domain | trim | length > 0) }}'
@@ -149,9 +153,9 @@ prowlarr_traefik_http_middlewares_bind: '{{ prowlarr_traefik_http_middlewares
                                                else "") }}'
 
 prowlarr_traefik_http_api_middlewares_bind: '{{ prowlarr_traefik_http_api_middlewares
-                                              + (",cloudflarewarp@docker"
-                                                 if (prowlarr_toggles_enable_cloudflarewarp)
-                                                 else "") }}'
+                                                + (",cloudflarewarp@docker"
+                                                   if (prowlarr_toggles_enable_cloudflarewarp)
+                                                   else "") }}'
 
 prowlarr_traefik_https_middlewares_bind: '{{ prowlarr_traefik_https_middlewares
                                              + (",cloudflarewarp@docker"
@@ -172,9 +176,6 @@ prowlarr_traefik_https_api_middlewares_bind: '{{ prowlarr_traefik_https_api_midd
 ################################
 # CLOUDFLARE
 ################################
-
-prowlarr_cloudflare_record: '{{ prowlarr_traefik_subdomain }}'
-prowlarr_cloudflare_zone: '{{ prowlarr_traefik_domain }}'
 
 prowlarr_cloudflare_is_enabled: '{{ (prowlarr_cloudflare_api_token is defined) and
                                     (prowlarr_cloudflare_api_token is not none) and

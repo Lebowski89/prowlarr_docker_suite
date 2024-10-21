@@ -31,4 +31,3 @@ prowlarr_postgres_network_is_enabled: '{{ (prowlarr_postgres_network_driver is d
 
 prowlarr_postgres_binds: '{{ prowlarr_postgres_binds_config_mapping
                              + prowlarr_postgres_binds_keys_mapping }}'
-
