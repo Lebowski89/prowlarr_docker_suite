@@ -39,7 +39,7 @@ prowlarr_traefik_http_rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr_
 prowlarr_traefik_http_priority: '20'
 
 prowlarr_traefik_http_api_middlewares: 'globalHeaders@file,redirect-to-https@docker,autodetect@docker,gzip@docker,robotHeaders@file'
-prowlarr_traefik_http_api_rule: '{{ prowlarr_traefik_http_rule + " && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))" }}'
+prowlarr_traefik_http_api_rule: '{{ prowlarr_traefik_http_rule + " && (PathPrefix(`/[0-9]+/api`) || PathPrefix(`/[0-9]+/download`) || PathPrefix(`/api`) || PathPrefix(`/ping`))" }}'
 prowlarr_traefik_http_api_priority: '30'
 
   ## prometheus
@@ -57,7 +57,7 @@ prowlarr_traefik_https_rule: 'Host(`{{ prowlarr_traefik_subdomain }}.{{ prowlarr
 prowlarr_traefik_https_priority: '20'
 
 prowlarr_traefik_https_api_middlewares: 'globalHeaders@file,secureHeaders@file,autodetect@docker,gzip@docker,robotHeaders@file,hsts@file'
-prowlarr_traefik_https_api_rule: '{{ prowlarr_traefik_https_rule + " && (PathPrefix(`/api`) || PathPrefix(`/feed`) || PathPrefix(`/ping`))" }}'
+prowlarr_traefik_https_api_rule: '{{ prowlarr_traefik_https_rule + " && (PathPrefix(`/[0-9]+/api`) || PathPrefix(`/[0-9]+/download`) || PathPrefix(`/api`) || PathPrefix(`/ping`))" }}'
 prowlarr_traefik_https_api_priority: '30'
 
   ## prometheus
