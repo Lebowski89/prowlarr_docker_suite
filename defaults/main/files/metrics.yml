@@ -1,20 +1,8 @@
 ---
 
 ################################
-# API
-################################
-
-prowlarr_api_key: ''
-
-################################
 # BASICS
 ################################
-
-  ## prowlarr
-prowlarr_basics_name: 'prowlarr'
-prowlarr_basics_image_repo: 'ghcr.io/hotio/prowlarr'
-prowlarr_basics_image_tag: 'nightly'
-prowlarr_basics_restart_policy: 'unless-stopped'
 
   ## prometheus
 prowlarr_prometheus_basics_name: 'prometheus'
@@ -22,14 +10,15 @@ prowlarr_prometheus_basics_image_repo: 'prom/prometheus'
 prowlarr_prometheus_basics_image_tag: 'main'
 prowlarr_prometheus_basics_restart_policy: 'unless-stopped'
 
+  ## prowlarr-prometheus-exporter
+prowlarr_prometheus_exporter_basics_name: '{{ prowlarr_basics_name }}-exporter'
+prowlarr_prometheus_exporter_basics_image_repo: 'ghcr.io/onedr0p/exportarr'
+prowlarr_prometheus_exporter_basics_image_tag: 'v2.0.1'
+prowlarr_prometheus_exporter_basics_restart_policy: 'unless-stopped'
+
 ################################
 # NETWORK
 ################################
-
-  ## backend
-prowlarr_network_backend: 'proxy'  ## allows backend docker communication between prowlarr and companion apps
-prowlarr_network_backend_driver: 'bridge'  ## only required if network doesn't exist
-prowlarr_network_backend_subnet: ''  ## only required if network doesn't exist
 
   ## prometheus
 prowlarr_prometheus_network: 'prometheus'
@@ -40,35 +29,31 @@ prowlarr_prometheus_network_subnet: ''
 # ENV
 ################################
 
-  ## prowlarr
-prowlarr_env_timezone: 'Etc/UTC'
-prowlarr_env_puid: '1000'
-prowlarr_env_pgid: '1000'
-
   ## promtheus
 prowlarr_prometheus_env_timezone: '{{ prowlarr_env_timezone }}'
 prowlarr_prometheus_env_puid: '{{ prowlarr_env_puid }}'
 prowlarr_prometheus_env_pgid: '{{ prowlarr_env_pgid }}'
 
+  ## prowlarr-prometheus-exporter
+prowlarr_prometheus_exporter_env_timezone: '{{ prowlarr_env_timezone }}'
+prowlarr_prometheus_exporter_env_puid: '{{ prowlarr_env_puid }}'
+prowlarr_prometheus_exporter_env_pgid: '{{ prowlarr_env_pgid }}'
+
 ################################
 # PORTS
 ################################
-
-  ## prowlarr
-prowlarr_ports_host: '9696'
-prowlarr_ports_cont: '9696'
 
   ## prometheus
 prowlarr_prometheus_ports_host: '9090'
 prowlarr_prometheus_ports_cont: '9090'
 
+  ## prowlarr-prometheus-exporter
+prowlarr_prometheus_exporter_ports_host: '9710'
+prowlarr_prometheus_exporter_ports_cont: '9710'
+
 ################################
 # PATHS
 ################################
-
-  ## prowlarr
-prowlarr_paths_folder: '{{ prowlarr_basics_name }}'
-prowlarr_paths_location: '/opt/{{ prowlarr_paths_folder }}'
 
   ## prometheus
 prowlarr_prometheus_paths_folder: '{{ prowlarr_prometheus_basics_name }}'  # name of prometheus config folder
@@ -79,21 +64,11 @@ prowlarr_prometheus_paths_data_location: '{{ prowlarr_prometheus_paths_location 
 # BINDS
 ################################
 
-  ## prowlarr
-prowlarr_volumes_binds_default:
-  - /etc/localtime:/etc/localtime:ro
-  - '{{ prowlarr_paths_location }}:/config'
-
-prowlarr_volumes_binds_themepark:  ## only binds if local themepark is deployed
-  - '{{ prowlarr_themepark_paths_location }}/docker-mods/98-themepark-prowlarr:/etc/cont-init.d/98-themepark'
-
   ## prometheus
 prowlarr_prometheus_binds_config_mapping:
   - '{{ prowlarr_prometheus_paths_location }}/prometheus.yml:/etc/prometheus/prometheus.yml'
-
 prowlarr_prometheus_binds_data_mapping:
   - '{{ prowlarr_prometheus_paths_data_location }}:/data'
-
 
 ################################
 # METRICS

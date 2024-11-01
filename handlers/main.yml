@@ -3,7 +3,7 @@
 - name: Restart prometheus container
   community.docker.docker_container:
     container_default_behavior: compatibility
-    name: '{{ lookup("vars", role_prefix + "_prometheus_basics_name") }}'
+    name: '{{ lookup("vars", prowlarr_prefix + "_prometheus_basics_name") }}'
     state: started
     comparisons:
       '*': ignore
